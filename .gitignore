@@ -16,3 +16,8 @@
 *.exe
 *.out
 *.app
+
+# Others
+.*
+peda*
+tags

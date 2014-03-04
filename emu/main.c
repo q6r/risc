@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include "vm.h"
+#include "emu.h"
 
 const uint8_t code[] = {
   0xa7, 0x00, /* inc r1 */

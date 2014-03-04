@@ -10,7 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "vm.h"
+#include "emu.h"
 
 bool init_vm(vm_t *vm, size_t cs, size_t ss) {
 	assert(cs > 0);

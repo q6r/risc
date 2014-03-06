@@ -10,7 +10,8 @@
 #include <assert.h>
 #include "emu.h"
 
-bool init_vm(vm_t *vm, size_t cs, size_t ss) {
+bool init_vm(vm_t * vm, size_t cs, size_t ss)
+{
 	assert(cs > 0);
 	assert(ss > 0);
 
@@ -24,9 +25,9 @@ bool init_vm(vm_t *vm, size_t cs, size_t ss) {
 	vm->stack_size = ss;
 
 	// allocate code and stack
-	vm->code = (u8 *)malloc(sizeof(u8)*vm->code_size);
+	vm->code = (u8 *) malloc(sizeof(u8) * vm->code_size);
 	assert(vm->code != NULL);
-	vm->stack = (u8 *)malloc(sizeof(int8_t)*vm->stack_size);
+	vm->stack = (u8 *) malloc(sizeof(int8_t) * vm->stack_size);
 	assert(vm->stack != NULL);
 	// zero code and stack
 	memset(vm->code, 0x00, cs);
@@ -35,7 +36,8 @@ bool init_vm(vm_t *vm, size_t cs, size_t ss) {
 	return true;
 }
 
-bool term_vm(vm_t *vm) {
+bool term_vm(vm_t * vm)
+{
 	vm->regs.pc = 0x00000000;
 	vm->regs.ps = 0x00000000;
 	vm->regs.r1 = 0x00000000;
@@ -49,53 +51,58 @@ bool term_vm(vm_t *vm) {
 	return true;
 }
 
-enum INST_NAME get_inst_name(u8 opcode) {
+enum INST_NAME get_inst_name(u8 opcode)
+{
 	size_t inst_table_size = sizeof(inst_table) / sizeof(inst_table[0]);
 	size_t i;
-	for(i=0;i<inst_table_size;i++) {
-		if(inst_table[i].opcode == opcode)
+	for (i = 0; i < inst_table_size; i++) {
+		if (inst_table[i].opcode == opcode)
 			return inst_table[i].name;
 	}
 	return INVALID_OPCODE;
 }
 
-reg_t *ridx_to_rvm(reg_t r_idx, vm_t *vm) {
+reg_t *ridx_to_rvm(reg_t r_idx, vm_t * vm)
+{
 	reg_t *res = NULL;
 
-	switch(r_idx) {
-		case 0x00:
-			res = &vm->regs.r1;
-			break;
-		case 0x01:
-			res = &vm->regs.r2;
-			break;
-		case 0x02:
-			res = &vm->regs.r3;
-			break;
-		case 0x03:
-			res = &vm->regs.r4;
-			break;
-		default:
-			break;
+	switch (r_idx) {
+	case 0x00:
+		res = &vm->regs.r1;
+		break;
+	case 0x01:
+		res = &vm->regs.r2;
+		break;
+	case 0x02:
+		res = &vm->regs.r3;
+		break;
+	case 0x03:
+		res = &vm->regs.r4;
+		break;
+	default:
+		break;
 	};
 
 	return res;
 }
 
-bool process_code(vm_t *vm) {
-	for(vm->regs.pc = 0; vm->regs.pc < (reg_t)vm->code_size; ) {
+bool process_code(vm_t * vm)
+{
+	for (vm->regs.pc = 0; vm->regs.pc < (reg_t) vm->code_size;) {
 		u8 opcode = vm->code[vm->regs.pc];
 		inst c_inst = get_instruction(opcode);
 		SHOW_REGS;
-		switch(c_inst.name) {
-			case ADD:
+		switch (c_inst.name) {
+		case ADD:
 			{
 				printf("add\n");
 				// extract registers
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				reg_t rb_idx = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				assert(rb_idx == 0x00 || rb_idx == 0x01 || rb_idx == 0x02 || rb_idx == 0x03);
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				assert(rb_idx == 0x00 || rb_idx == 0x01
+				       || rb_idx == 0x02 || rb_idx == 0x03);
 				// register index to vm register
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				reg_t *rb = ridx_to_rvm(rb_idx, vm);
@@ -105,53 +112,58 @@ bool process_code(vm_t *vm) {
 				*ra = c_inst.func(*ra, *rb);
 				break;
 			}
-			case ADDIB:
+		case ADDIB:
 			{
-			    printf("addib\n");
+				printf("addib\n");
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				u8 rab = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				// does job	
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job     
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				assert(ra != NULL);
-				*ra = c_inst.func(*ra, (u8)rab);
+				*ra = c_inst.func(*ra, (u8) rab);
 				break;
 			}
-			case ADDIW:
+		case ADDIW:
 			{
-			    printf("addiw\n");
+				printf("addiw\n");
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				u16 rab = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				// does job	
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job     
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				assert(ra != NULL);
-				*ra = c_inst.func(*ra, (u16)rab);
-			   break;
+				*ra = c_inst.func(*ra, (u16) rab);
+				break;
 			}
-			case ADDID:
+		case ADDID:
 			{
-			    printf("addid\n");
+				printf("addid\n");
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				u32 rab = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				// does job	
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job     
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				assert(ra != NULL);
-				*ra = c_inst.func(*ra, (u32)rab);
-			   break;
+				*ra = c_inst.func(*ra, (u32) rab);
+				break;
 			}
-			case SUB:
+		case SUB:
 			{
 				printf("sub\n");
 				// extract registers
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				reg_t rb_idx = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				assert(rb_idx == 0x00 || rb_idx == 0x01 || rb_idx == 0x02 || rb_idx == 0x03);
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				assert(rb_idx == 0x00 || rb_idx == 0x01
+				       || rb_idx == 0x02 || rb_idx == 0x03);
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				reg_t *rb = ridx_to_rvm(rb_idx, vm);
 				assert(ra != NULL);
@@ -159,53 +171,58 @@ bool process_code(vm_t *vm) {
 				*ra = c_inst.func(*ra, *rb);
 				break;
 			}
-			case SUBIB:
+		case SUBIB:
 			{
-			    printf("subib\n");
+				printf("subib\n");
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				u8 rab = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				// does job	
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job     
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				assert(ra != NULL);
-				*ra = c_inst.func(*ra, (u8)rab);
+				*ra = c_inst.func(*ra, (u8) rab);
 				break;
 			}
-			case SUBIW:
+		case SUBIW:
 			{
-			    printf("subiw\n");
+				printf("subiw\n");
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				u16 rab = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				// does job	
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job     
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				assert(ra != NULL);
-				*ra = c_inst.func(*ra, (u16)rab);
-			   break;
+				*ra = c_inst.func(*ra, (u16) rab);
+				break;
 			}
-			case SUBID:
+		case SUBID:
 			{
-			    printf("subid\n");
+				printf("subid\n");
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				u32 rab = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				// does job	
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job     
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				assert(ra != NULL);
-				*ra = c_inst.func(*ra, (u32)rab);
-			   break;
+				*ra = c_inst.func(*ra, (u32) rab);
+				break;
 			}
-			case MUL:
+		case MUL:
 			{
 				printf("mul\n");
 				// extract registers
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				reg_t rb_idx = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				assert(rb_idx == 0x00 || rb_idx == 0x01 || rb_idx == 0x02 || rb_idx == 0x03);
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				assert(rb_idx == 0x00 || rb_idx == 0x01
+				       || rb_idx == 0x02 || rb_idx == 0x03);
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				reg_t *rb = ridx_to_rvm(rb_idx, vm);
 				assert(ra != NULL);
@@ -213,53 +230,58 @@ bool process_code(vm_t *vm) {
 				*ra = c_inst.func(*ra, *rb);
 				break;
 			}
-			case MULIB:
+		case MULIB:
 			{
-			    printf("mulib\n");
+				printf("mulib\n");
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				u8 rab = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				// does job	
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job     
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				assert(ra != NULL);
-				*ra = c_inst.func(*ra, (u8)rab);
+				*ra = c_inst.func(*ra, (u8) rab);
 				break;
 			}
-			case MULIW:
+		case MULIW:
 			{
-			   printf("muliw\n");
-			   // extract register and byte
-			   reg_t ra_idx = vm->code[++vm->regs.pc];
-			   u16 rab = vm->code[++vm->regs.pc];
-			   assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-			   // does job	
-			   reg_t *ra = ridx_to_rvm(ra_idx, vm);
-			   assert(ra != NULL);
-		 	   *ra = c_inst.func(*ra, (u16)rab);
-			   break;
+				printf("muliw\n");
+				// extract register and byte
+				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u16 rab = vm->code[++vm->regs.pc];
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job  
+				reg_t *ra = ridx_to_rvm(ra_idx, vm);
+				assert(ra != NULL);
+				*ra = c_inst.func(*ra, (u16) rab);
+				break;
 			}
-			case MULID:
+		case MULID:
 			{
-			   printf("mulid\n");
-			   // extract register and byte
-			   reg_t ra_idx = vm->code[++vm->regs.pc];
-			   u32 rab = vm->code[++vm->regs.pc];
-			   assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-			   // does job	
-			   reg_t *ra = ridx_to_rvm(ra_idx, vm);
-			   assert(ra != NULL);
-		 	   *ra = c_inst.func(*ra, (u32)rab);
-			   break;
+				printf("mulid\n");
+				// extract register and byte
+				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u32 rab = vm->code[++vm->regs.pc];
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job  
+				reg_t *ra = ridx_to_rvm(ra_idx, vm);
+				assert(ra != NULL);
+				*ra = c_inst.func(*ra, (u32) rab);
+				break;
 			}
-			case DIV:
+		case DIV:
 			{
 				printf("div\n");
 				// extract registers
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				reg_t rb_idx = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				assert(rb_idx == 0x00 || rb_idx == 0x01 || rb_idx == 0x02 || rb_idx == 0x03);
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				assert(rb_idx == 0x00 || rb_idx == 0x01
+				       || rb_idx == 0x02 || rb_idx == 0x03);
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				reg_t *rb = ridx_to_rvm(rb_idx, vm);
 				assert(ra != NULL);
@@ -267,53 +289,58 @@ bool process_code(vm_t *vm) {
 				*ra = c_inst.func(*ra, *rb);
 				break;
 			}
-			case DIVIB:
+		case DIVIB:
 			{
-			    printf("divib\n");
+				printf("divib\n");
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				u8 rab = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				// does job	
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job     
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				assert(ra != NULL);
-				*ra = c_inst.func(*ra, (u8)rab);
+				*ra = c_inst.func(*ra, (u8) rab);
 				break;
 			}
-			case DIVIW:
+		case DIVIW:
 			{
-			   printf("diviw\n");
-			   // extract register and byte
-			   reg_t ra_idx = vm->code[++vm->regs.pc];
-			   u16 rab = vm->code[++vm->regs.pc];
-			   assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-			   // does job	
-			   reg_t *ra = ridx_to_rvm(ra_idx, vm);
-			   assert(ra != NULL);
-			   *ra = c_inst.func(*ra, (u16)rab);
-			   break;
+				printf("diviw\n");
+				// extract register and byte
+				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u16 rab = vm->code[++vm->regs.pc];
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job  
+				reg_t *ra = ridx_to_rvm(ra_idx, vm);
+				assert(ra != NULL);
+				*ra = c_inst.func(*ra, (u16) rab);
+				break;
 			}
-			case DIVID:
+		case DIVID:
 			{
-			   printf("divid\n");
-			   // extract register and byte
-			   reg_t ra_idx = vm->code[++vm->regs.pc];
-			   u32 rab = vm->code[++vm->regs.pc];
-			   assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-			   // does job	
-			   reg_t *ra = ridx_to_rvm(ra_idx, vm);
-			   assert(ra != NULL);
-			   *ra = c_inst.func(*ra, (u32)rab);
-			   break;
+				printf("divid\n");
+				// extract register and byte
+				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u32 rab = vm->code[++vm->regs.pc];
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job  
+				reg_t *ra = ridx_to_rvm(ra_idx, vm);
+				assert(ra != NULL);
+				*ra = c_inst.func(*ra, (u32) rab);
+				break;
 			}
-			case XOR:
+		case XOR:
 			{
 				printf("xor\n");
 				// extract registers
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				reg_t rb_idx = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				assert(rb_idx == 0x00 || rb_idx == 0x01 || rb_idx == 0x02 || rb_idx == 0x03);
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				assert(rb_idx == 0x00 || rb_idx == 0x01
+				       || rb_idx == 0x02 || rb_idx == 0x03);
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				reg_t *rb = ridx_to_rvm(rb_idx, vm);
 				assert(ra != NULL);
@@ -321,53 +348,58 @@ bool process_code(vm_t *vm) {
 				*ra = c_inst.func(*ra, *rb);
 				break;
 			}
-			case XORIB:
+		case XORIB:
 			{
-			    printf("xorib\n");
+				printf("xorib\n");
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				u8 rab = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				// does job	
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job     
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				assert(ra != NULL);
-				*ra = c_inst.func(*ra, (u8)rab);
+				*ra = c_inst.func(*ra, (u8) rab);
 				break;
 			}
-			case XORIW:
+		case XORIW:
 			{
-			   printf("xoriw\n");
-			   // extract register and byte
-			   reg_t ra_idx = vm->code[++vm->regs.pc];
-			   u16 rab = vm->code[++vm->regs.pc];
-			   assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-			   // does job	
-			   reg_t *ra = ridx_to_rvm(ra_idx, vm);
-			   assert(ra != NULL);
-			   *ra = c_inst.func(*ra, (u16)rab);
-			   break;
+				printf("xoriw\n");
+				// extract register and byte
+				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u16 rab = vm->code[++vm->regs.pc];
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job  
+				reg_t *ra = ridx_to_rvm(ra_idx, vm);
+				assert(ra != NULL);
+				*ra = c_inst.func(*ra, (u16) rab);
+				break;
 			}
-			case XORID:
+		case XORID:
 			{
-			   printf("xorid\n");
-			   // extract register and byte
-			   reg_t ra_idx = vm->code[++vm->regs.pc];
-			   u32 rab = vm->code[++vm->regs.pc];
-			   assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-			   // does job	
-			   reg_t *ra = ridx_to_rvm(ra_idx, vm);
-			   assert(ra != NULL);
-			   *ra = c_inst.func(*ra, (u32)rab);
-			   break;
+				printf("xorid\n");
+				// extract register and byte
+				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u32 rab = vm->code[++vm->regs.pc];
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job  
+				reg_t *ra = ridx_to_rvm(ra_idx, vm);
+				assert(ra != NULL);
+				*ra = c_inst.func(*ra, (u32) rab);
+				break;
 			}
-			case MOV:
+		case MOV:
 			{
 				printf("mov\n");
 				// extract registers
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				reg_t rb_idx = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				assert(rb_idx == 0x00 || rb_idx == 0x01 || rb_idx == 0x02 || rb_idx == 0x03);
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				assert(rb_idx == 0x00 || rb_idx == 0x01
+				       || rb_idx == 0x02 || rb_idx == 0x03);
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				reg_t *rb = ridx_to_rvm(rb_idx, vm);
 				assert(ra != NULL);
@@ -375,164 +407,217 @@ bool process_code(vm_t *vm) {
 				*ra = c_inst.func(*ra, *rb);
 				break;
 			}
-			case MOVIB:
+		case MOVIB:
 			{
-			    printf("movib\n");
+				printf("movib\n");
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
 				u8 rab = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-				// does job	
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job     
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				assert(ra != NULL);
-				*ra = c_inst.func(*ra, (u8)rab);
+				*ra = c_inst.func(*ra, (u8) rab);
 				break;
 			}
-			case MOVIW:
+		case MOVIW:
 			{
-			   printf("moviw\n");
-			   // extract register and byte
-			   reg_t ra_idx = vm->code[++vm->regs.pc];
-			   u16 rab = vm->code[++vm->regs.pc];
-			   assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-			   // does job	
-			   reg_t *ra = ridx_to_rvm(ra_idx, vm);
-			   assert(ra != NULL);
-			   *ra = c_inst.func(*ra, (u16)rab);
-			   break;
+				printf("moviw\n");
+				// extract register and byte
+				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u16 rab = vm->code[++vm->regs.pc];
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job  
+				reg_t *ra = ridx_to_rvm(ra_idx, vm);
+				assert(ra != NULL);
+				*ra = c_inst.func(*ra, (u16) rab);
+				break;
 			}
-			case MOVID:
+		case MOVID:
 			{
-			   printf("movid\n");
-			   // extract register and byte
-			   reg_t ra_idx = vm->code[++vm->regs.pc];
-			   u32 rab = vm->code[++vm->regs.pc];
-			   assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-			   // does job	
-			   reg_t *ra = ridx_to_rvm(ra_idx, vm);
-			   assert(ra != NULL);
-			   *ra = c_inst.func(*ra, (u32)rab);
-			   break;
+				printf("movid\n");
+				// extract register and byte
+				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u32 rab = vm->code[++vm->regs.pc];
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				// does job  
+				reg_t *ra = ridx_to_rvm(ra_idx, vm);
+				assert(ra != NULL);
+				*ra = c_inst.func(*ra, (u32) rab);
+				break;
 			}
-			case INC:
+		case INC:
 			{
 				printf("inc\n");
 				// extract registers
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-		        reg_t *ra = ridx_to_rvm(ra_idx, vm);
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				assert(ra != NULL);
 				*ra = c_inst.func(*ra, 0);
 				break;
-		    }
-			case DEC:
+			}
+		case DEC:
 			{
 				printf("dec\n");
 				// extract registers
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-		        reg_t *ra = ridx_to_rvm(ra_idx, vm);
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				assert(ra != NULL);
 				*ra = c_inst.func(*ra, 0);
 				break;
-		    }
-			case PUSHB:
+			}
+		case PUSHB:
 			{
 				printf("PUSHB\n");
 				// extract registers
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-		        reg_t *ra = ridx_to_rvm(ra_idx, vm);
-				vm->stack[vm->regs.ps++] = (u8)*ra;
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				reg_t *ra = ridx_to_rvm(ra_idx, vm);
+				vm->stack[vm->regs.ps++] = (u8) * ra;
 				break;
 			}
-			case PUSHW:
+		case PUSHW:
 			{
 				printf("PUSHW\n");
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-		        reg_t *ra = ridx_to_rvm(ra_idx, vm);
-				vm->stack[vm->regs.ps++] = (u16)*ra;
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				reg_t *ra = ridx_to_rvm(ra_idx, vm);
+				vm->stack[vm->regs.ps++] = (u16) * ra;
 				break;
 			}
-			case PUSHD:
+		case PUSHD:
 			{
 				printf("PUSHD\n");
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
-		        reg_t *ra = ridx_to_rvm(ra_idx, vm);
-				vm->stack[vm->regs.ps++] = (u32)*ra;
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
+				reg_t *ra = ridx_to_rvm(ra_idx, vm);
+				vm->stack[vm->regs.ps++] = (u32) * ra;
 				break;
 			}
-			case POPB:
+		case POPB:
 			{
 				printf("POPB\n");
 				assert(vm->regs.ps > 0);
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				vm->regs.ps--;
-				*ra = (u8)vm->stack[vm->regs.ps];
+				*ra = (u8) vm->stack[vm->regs.ps];
 				vm->stack[vm->regs.ps] = 0x00000000;
 				break;
 			}
-			case POPW:
+		case POPW:
 			{
 				printf("POPW\n");
 				assert(vm->regs.ps >= 0);
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				vm->regs.ps--;
-				*ra = (u16)vm->stack[vm->regs.ps];
+				*ra = (u16) vm->stack[vm->regs.ps];
 				vm->stack[vm->regs.ps] = 0x00000000;
 				break;
 			}
-			case POPD:
+		case POPD:
 			{
 				printf("POPD\n");
 				assert(vm->regs.ps > 0);
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				assert(ra_idx == 0x00 || ra_idx == 0x01 || ra_idx == 0x02 || ra_idx == 0x03);
+				assert(ra_idx == 0x00 || ra_idx == 0x01
+				       || ra_idx == 0x02 || ra_idx == 0x03);
 				reg_t *ra = ridx_to_rvm(ra_idx, vm);
 				vm->regs.ps--;
-				*ra = (u32)vm->stack[vm->regs.ps];
+				*ra = (u32) vm->stack[vm->regs.ps];
 				break;
 			}
-			case EXIT:
+		case EXIT:
 			{
 				printf("exit\n");
 				return true;
 			}
-			case INVALID_OPCODE:
-				printf("invalid\n");
-				//pass opcodes and continue
-				//vm->regs.pc++;
-				return false;
-			default:
-				printf("default\n");
-				return false;
+		case INVALID_OPCODE:
+			printf("invalid\n");
+			//pass opcodes and continue
+			//vm->regs.pc++;
+			return false;
+		default:
+			printf("default\n");
+			return false;
 		};
 		vm->regs.pc++;
 	}
 	return true;
 }
 
-inst get_instruction(u8 opcode) {
+inst get_instruction(u8 opcode)
+{
 	size_t inst_table_size = sizeof(inst_table) / sizeof(inst_table[0]);
 	size_t i;
-	for(i=0;i<inst_table_size;i++) {
-		if(inst_table[i].opcode == opcode)
+	for (i = 0; i < inst_table_size; i++) {
+		if (inst_table[i].opcode == opcode)
 			return inst_table[i];
 	}
-	return (inst){INVALID_OPCODE, 0xff, NULL}; // TODO INVALID INSTRUCTION
+	return (inst) {
+	INVALID_OPCODE, 0xff, NULL};	// TODO INVALID INSTRUCTION
 }
 
-reg_t inst_add(reg_t a, reg_t b) { a += b; return a; }
-reg_t inst_sub(reg_t a, reg_t b) { a -= b; return a; }
-reg_t inst_mul(reg_t a, reg_t b) { a *= b; return a; }
-reg_t inst_div(reg_t a, reg_t b) { assert(b != 0); a /= b; return a; }
-reg_t inst_xor(reg_t a, reg_t b) { a ^= b; return a; }
-reg_t inst_mov(reg_t a, reg_t b) { a = b; return a;  }
-reg_t inst_inc(reg_t a, reg_t unused) { a++; return a; }
-reg_t inst_dec(reg_t a, reg_t unused) { a--; return a; }
+reg_t inst_add(reg_t a, reg_t b)
+{
+	a += b;
+	return a;
+}
+
+reg_t inst_sub(reg_t a, reg_t b)
+{
+	a -= b;
+	return a;
+}
+
+reg_t inst_mul(reg_t a, reg_t b)
+{
+	a *= b;
+	return a;
+}
+
+reg_t inst_div(reg_t a, reg_t b)
+{
+	assert(b != 0);
+	a /= b;
+	return a;
+}
+
+reg_t inst_xor(reg_t a, reg_t b)
+{
+	a ^= b;
+	return a;
+}
+
+reg_t inst_mov(reg_t a, reg_t b)
+{
+	a = b;
+	return a;
+}
+
+reg_t inst_inc(reg_t a, reg_t unused)
+{
+	a++;
+	return a;
+}
+
+reg_t inst_dec(reg_t a, reg_t unused)
+{
+	a--;
+	return a;
+}

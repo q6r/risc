@@ -1,10 +1,10 @@
 /* - qnix
- * TODO: implement verbose && execute in process_code
+ * TODO: user COPY_PARTS8 in 8bit operators
+ * TODO: fix values in reg_t vs u32 vs u16 vs u8
  * TODO: registers numbers should be considered as u8 not reg_t
- * TODO: maybe convert reg_t to a struct that contains a value, and a string name
+ * XXX: implement TESTS *Check*
+ * XXX: maybe convert reg_t to a struct that contains a value, and a string name
  * and maybe other things.. settings ? -reg_to_str(..)
- * TODO: add more cases to test the rest of the instructions
- * maybe use _Check_
  * =====================================================================
  * Implementation of a simple virtual machine 32bit
  * =====================================================================
@@ -14,6 +14,16 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "emu.h"
+
+#define COPY_PARTS8(X, Y, Z) X = (X << 8) | Y[++Z]
+#define COPY_PARTS16(X, Y, Z) do { \
+			COPY_PARTS8(X, Y, Z); \
+			COPY_PARTS8(X, Y, Z); \
+			} while(0)
+#define COPY_PARTS32(X, Y, Z) do { \
+			COPY_PARTS16(X, Y, Z); \
+			COPY_PARTS16(X, Y, Z); \
+			} while(0)
 
 bool init_vm(vm_t * vm, size_t cs, size_t ss)
 {
@@ -174,7 +184,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u16 rab = vm->code[++vm->regs.pc];
+				u16 rab;
+				COPY_PARTS16(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
@@ -192,7 +203,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u32 rab = vm->code[++vm->regs.pc];
+				u32 rab;
+				COPY_PARTS32(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
@@ -250,7 +262,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u16 rab = vm->code[++vm->regs.pc];
+				u16 rab;
+				COPY_PARTS16(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
@@ -268,7 +281,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u32 rab = vm->code[++vm->regs.pc];
+				u32 rab;
+				COPY_PARTS32(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
@@ -326,7 +340,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u16 rab = vm->code[++vm->regs.pc];
+				u16 rab;
+				COPY_PARTS16(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
@@ -344,7 +359,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u32 rab = vm->code[++vm->regs.pc];
+				u32 rab;
+				COPY_PARTS32(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
@@ -402,7 +418,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u16 rab = vm->code[++vm->regs.pc];
+				u16 rab;
+				COPY_PARTS16(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
@@ -420,7 +437,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u32 rab = vm->code[++vm->regs.pc];
+				u32 rab;
+				COPY_PARTS32(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
@@ -478,7 +496,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u16 rab = vm->code[++vm->regs.pc];
+				u16 rab;
+				COPY_PARTS16(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
@@ -496,7 +515,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u32 rab = vm->code[++vm->regs.pc];
+				u32 rab;
+				COPY_PARTS32(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
@@ -554,7 +574,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u16 rab = vm->code[++vm->regs.pc];
+				u16 rab;
+				COPY_PARTS16(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
@@ -572,7 +593,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u32 rab = vm->code[++vm->regs.pc];
+				u32 rab;
+				COPY_PARTS32(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
@@ -723,7 +745,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			}
 		case PUSHIW:
 			{
-				reg_t ra = vm->code[++vm->regs.pc];
+				u16 ra;
+				COPY_PARTS16(ra, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %.8x\n", c_inst.sname, ra);
 				if (execute) {
@@ -733,7 +756,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			}
 		case PUSHID:
 			{
-				reg_t ra = vm->code[++vm->regs.pc];
+				u32 ra;
+				COPY_PARTS32(ra, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %.8x\n", c_inst.sname, ra);
 				if (execute) {
@@ -755,7 +779,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				//XXX pass opcodes and continue
 				//XXX vm->regs.pc++;
 				if (verbose)
-					printf("%s\n", c_inst.sname);
+					printf("%s %.8x\n", c_inst.sname,
+					       c_inst.opcode);
 				if (execute) {
 					return false;
 				}
@@ -780,7 +805,7 @@ inst get_instruction(u8 opcode)
 			return inst_table[i];
 	}
 	return (inst) {
-	INVALID_OPCODE, "InvalidOp", 0xff, NULL};	// TODO INVALID INSTRUCTION
+	INVALID_OPCODE, "InvalidOp", opcode, NULL};	// TODO INVALID INSTRUCTION
 }
 
 reg_t inst_add(reg_t a, reg_t b)

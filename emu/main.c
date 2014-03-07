@@ -93,7 +93,7 @@ int main()
 	vm_t vm;
 	init_vm(&vm, 1024, 1024);
 	memcpy(vm.code, code, sizeof code);
-	if (process_code(&vm) == false) {
+	if (process_code(&vm, true, true) == false) {
 		printf("Failed processing code\n");
 	}
 	term_vm(&vm);

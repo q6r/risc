@@ -21,3 +21,23 @@
 .*
 peda*
 tags
+
+# Autotools
+Makefile
+emu/Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache/
+compile
+config.h
+config.h.in
+config.log
+config.status
+configure
+depcomp
+emu/Makefile.in
+emu/emu
+install-sh
+missing
+stamp-h1
+

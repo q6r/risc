@@ -25,6 +25,53 @@
 			COPY_PARTS16(X, Y, Z); \
 			} while(0)
 
+static inst inst_table[100] = {
+	/* reg{reg_t}, reg{reg_t} and reg{reg_t} operators */
+	{ADD, "add", 0xa1, inst_add},
+	{SUB, "sub", 0xa2, inst_sub},
+	{MUL, "mul", 0xa3, inst_mul},
+	{DIV, "div", 0xa4, inst_div},
+	{XOR, "xor", 0xa5, inst_xor},
+	{MOV, "mov", 0xa6, inst_mov},
+	{INC, "inc", 0xa7, inst_inc},
+	{DEC, "dec", 0xa8, inst_dec},
+	{PUSHB, "pushb", 0xa9, NULL},
+	{PUSHW, "pushw", 0xaa, NULL},
+	{PUSHD, "pushd", 0xab, NULL},
+	{POPB, "popb", 0xac, NULL},
+	{POPW, "popw", 0xad, NULL},
+	{POPD, "popd", 0xae, NULL},
+	/* reg, immu{32,16,8} and immu{32,16,8} operators */
+	// immb 8bit
+	{ADDIB, "addib", 0xb1, inst_add},
+	{SUBIB, "subib", 0xb2, inst_sub},
+	{MULIB, "mulib", 0xb3, inst_mul},
+	{DIVIB, "divib", 0xb4, inst_div},
+	{XORIB, "xorib", 0xb5, inst_xor},
+	{MOVIB, "movib", 0xb6, inst_mov},
+	{PUSHIB, "pushib", 0xd9, NULL},
+	// immw 16bit
+	{ADDIW, "addiw", 0xd1, inst_add},
+	{SUBIW, "subiw", 0xd2, inst_sub},
+	{MULIW, "muliw", 0xd3, inst_mul},
+	{DIVIW, "diviw", 0xd4, inst_div},
+	{XORIW, "xoriw", 0xd5, inst_xor},
+	{MOVIW, "moviw", 0xd6, inst_mov},
+	{PUSHIW, "pushiw", 0xda, NULL},
+	// immd 32bit TODO rename to DW ?
+	{ADDID, "addid", 0xc1, inst_add},
+	{SUBID, "subid", 0xc2, inst_sub},
+	{MULID, "mulid", 0xc3, inst_mul},
+	{DIVID, "divid", 0xc4, inst_div},
+	{XORID, "xorid", 0xc5, inst_xor},
+	{MOVID, "movid", 0xc6, inst_mov},
+	{PUSHID, "pushid", 0xdb, NULL},
+	/* others */
+	{EXIT, "exit", 0xaf, NULL}
+};
+
+
+
 bool init_vm(vm_t * vm, size_t cs, size_t ss)
 {
 	assert(cs > 0);

@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include <config.h>
 #include "emu.h"
 
 const uint8_t code[] = {

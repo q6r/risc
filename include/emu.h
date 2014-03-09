@@ -100,10 +100,10 @@ typedef struct {
 	 r2,			/*  RR2 */
 	 r3,			/*  RR3 */
 	 r4,			/*  RR4 */
-	 r5,            /*  RR5 */
-	 r6,            /*  RR6 */
-	 r7,            /*  RR7 */
-	 r8;            /*  RR8 */
+	 r5,			/*  RR5 */
+	 r6,			/*  RR6 */
+	 r7,			/*  RR7 */
+	 r8;			/*  RR8 */
 } regs_t;
 
 typedef struct {

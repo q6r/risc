@@ -102,7 +102,7 @@ const uint8_t code[] = {
 	OP_MOVIB, RR2, 0xff,	/* movib r2, 0xff */
 	OP_MOVIB, RR3, 0xff,	/* movib r3, 0xff */
 	OP_MOVIB, RR4, 0xff,	/* movib r4, 0xff */
-	OP_PUSHIB, 0xff,		/* pushib 0xff */
+	OP_PUSHIB, 0xff,	/* pushib 0xff */
 	OP_PUSHB, RR1,		/* pushb r1 */
 	OP_PUSHB, RR2,		/* pushb r2 */
 	OP_PUSHB, RR3,		/* pushb r3 */
@@ -138,7 +138,7 @@ const uint8_t code[] = {
 int main()
 {
 	vm_t vm;
-	if(!init_vm(&vm, 1024, 1024)) {
+	if (!init_vm(&vm, 1024, 1024)) {
 		printf("Unable to initalize vm\n");
 		return -1;
 	}

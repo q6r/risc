@@ -77,7 +77,7 @@ static inst inst_table[100] = {
 
 bool init_vm(vm_t * vm, size_t cs, size_t ss)
 {
-	if(cs < 0 || ss < 0)
+	if (cs < 0 || ss < 0)
 		return false;
 
 	memset(&vm->regs, 0, sizeof(vm->regs));
@@ -86,12 +86,12 @@ bool init_vm(vm_t * vm, size_t cs, size_t ss)
 
 	// allocate code and stack
 	vm->code = (u8 *) malloc(sizeof(u8) * vm->code_size);
-	if(vm->code == NULL) {
+	if (vm->code == NULL) {
 		perror("malloc");
 		return false;
 	}
 	vm->stack = (u8 *) malloc(sizeof(int8_t) * vm->stack_size);
-	if(vm->stack == NULL) {
+	if (vm->stack == NULL) {
 		perror("malloc");
 		free(vm->code);
 		return false;
@@ -823,13 +823,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			}
 		case SYS_CALL:
 			{
-			   // TODO : Implement
-			   break;
+				// TODO : Implement
+				break;
 			}
 		case INVALID_OPCODE:
 			{
-			   // XXX incase of an invalid opcode shall we
-			   // -ignore and continue ?
+				// XXX incase of an invalid opcode shall we
+				// -ignore and continue ?
 				if (verbose)
 					printf("%s %.8x\n", c_inst.sname,
 					       c_inst.opcode);
@@ -880,7 +880,7 @@ reg_t inst_mul(reg_t a, reg_t b)
 
 reg_t inst_div(reg_t a, reg_t b)
 {
-	assert(b != 0); // TODO better handling raise SIGFPE-like
+	assert(b != 0);		// TODO better handling raise SIGFPE-like
 	a /= b;
 	return a;
 }

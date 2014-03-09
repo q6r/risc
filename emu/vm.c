@@ -1,5 +1,6 @@
 /* - qnix
- * TODO: user COPY_PARTS8 in 8bit operators
+ * TODO: Add more tests for new registers
+ * TODO: Implement a sys_call interface
  * TODO: fix values in reg_t vs u32 vs u16 vs u8
  * TODO: registers numbers should be considered as u8 not reg_t
  * XXX: implement TESTS *Check*
@@ -24,90 +25,88 @@
 			COPY_PARTS16(X, Y, Z); \
 			COPY_PARTS16(X, Y, Z); \
 			} while(0)
+#define IS_VALID_REG(x) assert(x == RR1 || x == RR2 || \
+  x == RR3 || x == RR4 || x == RR5 || x == RR6 || \
+  x == RR7 || x == RR8 || x == RPS || x == RPC)
 
 static inst inst_table[100] = {
 	/* reg{reg_t}, reg{reg_t} and reg{reg_t} operators */
-	{ADD, "add", 0xa1, inst_add},
-	{SUB, "sub", 0xa2, inst_sub},
-	{MUL, "mul", 0xa3, inst_mul},
-	{DIV, "div", 0xa4, inst_div},
-	{XOR, "xor", 0xa5, inst_xor},
-	{MOV, "mov", 0xa6, inst_mov},
-	{INC, "inc", 0xa7, inst_inc},
-	{DEC, "dec", 0xa8, inst_dec},
-	{PUSHB, "pushb", 0xa9, NULL},
-	{PUSHW, "pushw", 0xaa, NULL},
-	{PUSHD, "pushd", 0xab, NULL},
-	{POPB, "popb", 0xac, NULL},
-	{POPW, "popw", 0xad, NULL},
-	{POPD, "popd", 0xae, NULL},
+	{ADD, "add", OP_ADD, inst_add},
+	{SUB, "sub", OP_SUB, inst_sub},
+	{MUL, "mul", OP_MUL, inst_mul},
+	{DIV, "div", OP_DIV, inst_div},
+	{XOR, "xor", OP_XOR, inst_xor},
+	{MOV, "mov", OP_MOV, inst_mov},
+	{INC, "inc", OP_INC, inst_inc},
+	{DEC, "dec", OP_DEC, inst_dec},
+	{PUSHB, "pushb", OP_PUSHB, NULL},
+	{PUSHW, "pushw", OP_PUSHW, NULL},
+	{PUSHD, "pushd", OP_PUSHD, NULL},
+	{POPB, "popb", OP_POPB, NULL},
+	{POPW, "popw", OP_POPW, NULL},
+	{POPD, "popd", OP_POPD, NULL},
 	/* reg, immu{32,16,8} and immu{32,16,8} operators */
 	// immb 8bit
-	{ADDIB, "addib", 0xb1, inst_add},
-	{SUBIB, "subib", 0xb2, inst_sub},
-	{MULIB, "mulib", 0xb3, inst_mul},
-	{DIVIB, "divib", 0xb4, inst_div},
-	{XORIB, "xorib", 0xb5, inst_xor},
-	{MOVIB, "movib", 0xb6, inst_mov},
-	{PUSHIB, "pushib", 0xd9, NULL},
+	{ADDIB, "addib", OP_ADDIB, inst_add},
+	{SUBIB, "subib", OP_SUBIB, inst_sub},
+	{MULIB, "mulib", OP_MULIB, inst_mul},
+	{DIVIB, "divib", OP_DIVIB, inst_div},
+	{XORIB, "xorib", OP_XORIB, inst_xor},
+	{MOVIB, "movib", OP_MOVIB, inst_mov},
+	{PUSHIB, "pushib", OP_PUSHIB, NULL},
 	// immw 16bit
-	{ADDIW, "addiw", 0xd1, inst_add},
-	{SUBIW, "subiw", 0xd2, inst_sub},
-	{MULIW, "muliw", 0xd3, inst_mul},
-	{DIVIW, "diviw", 0xd4, inst_div},
-	{XORIW, "xoriw", 0xd5, inst_xor},
-	{MOVIW, "moviw", 0xd6, inst_mov},
-	{PUSHIW, "pushiw", 0xda, NULL},
+	{ADDIW, "addiw", OP_ADDIW, inst_add},
+	{SUBIW, "subiw", OP_SUBIW, inst_sub},
+	{MULIW, "muliw", OP_MULIW, inst_mul},
+	{DIVIW, "diviw", OP_DIVIW, inst_div},
+	{XORIW, "xoriw", OP_XORIW, inst_xor},
+	{MOVIW, "moviw", OP_MOVIW, inst_mov},
+	{PUSHIW, "pushiw", OP_PUSHIW, NULL},
 	// immd 32bit TODO rename to DW ?
-	{ADDID, "addid", 0xc1, inst_add},
-	{SUBID, "subid", 0xc2, inst_sub},
-	{MULID, "mulid", 0xc3, inst_mul},
-	{DIVID, "divid", 0xc4, inst_div},
-	{XORID, "xorid", 0xc5, inst_xor},
-	{MOVID, "movid", 0xc6, inst_mov},
-	{PUSHID, "pushid", 0xdb, NULL},
+	{ADDID, "addid", OP_ADDID, inst_add},
+	{SUBID, "subid", OP_SUBID, inst_sub},
+	{MULID, "mulid", OP_MULID, inst_mul},
+	{DIVID, "divid", OP_DIVID, inst_div},
+	{XORID, "xorid", OP_XORID, inst_xor},
+	{MOVID, "movid", OP_MOVID, inst_mov},
+	{PUSHID, "pushid", OP_PUSHID, NULL},
 	/* others */
-	{EXIT, "exit", 0xaf, NULL}
+	{EXIT, "exit", OP_EXIT, NULL},
+	{SYS_CALL, "sys_call", OP_SYSCALL, NULL}
 };
-
-
 
 bool init_vm(vm_t * vm, size_t cs, size_t ss)
 {
-	assert(cs > 0);
-	assert(ss > 0);
+	if(cs < 0 || ss < 0)
+		return false;
 
-	vm->regs.pc = 0x00000000;
-	vm->regs.ps = 0x00000000;
-	vm->regs.r1 = 0x00000000;
-	vm->regs.r2 = 0x00000000;
-	vm->regs.r3 = 0x00000000;
-	vm->regs.r4 = 0x00000000;
+	memset(&vm->regs, 0, sizeof(vm->regs));
 	vm->code_size = cs;
 	vm->stack_size = ss;
 
 	// allocate code and stack
 	vm->code = (u8 *) malloc(sizeof(u8) * vm->code_size);
-	assert(vm->code != NULL);
+	if(vm->code == NULL) {
+		perror("malloc");
+		return false;
+	}
 	vm->stack = (u8 *) malloc(sizeof(int8_t) * vm->stack_size);
-	assert(vm->stack != NULL);
+	if(vm->stack == NULL) {
+		perror("malloc");
+		free(vm->code);
+		return false;
+	}
 	// zero code and stack
-	memset(vm->code, 0x00, cs);
-	memset(vm->stack, 0x00, ss);
+	memset(vm->code, 0, cs);
+	memset(vm->stack, 0, ss);
 
 	return true;
 }
 
 bool term_vm(vm_t * vm)
 {
-	vm->regs.pc = 0x00000000;
-	vm->regs.ps = 0x00000000;
-	vm->regs.r1 = 0x00000000;
-	vm->regs.r2 = 0x00000000;
-	vm->regs.r3 = 0x00000000;
-	vm->regs.r4 = 0x00000000;
-	vm->code_size = 0x00;
-	vm->stack_size = 0x00;
+	memset(&vm->regs, 0, sizeof(vm->regs));
+	vm->code_size = vm->stack_size = 0;
 	free(vm->code);
 	free(vm->stack);
 	return true;
@@ -127,25 +126,40 @@ enum INST_NAME get_inst_name(u8 opcode)
 const char *reg_to_str(reg_t r)
 {
 	switch (r) {
-	case 0x00:
-		return "r1";
-		break;
-	case 0x01:
-		return "r2";
-		break;
-	case 0x02:
-		return "r3";
-		break;
-	case 0x03:
-		return "r4";
-		break;
-	case 0x04:
+	case RPC:
 		return "pc";
 		break;
-	case 0x05:
+	case RPS:
 		return "ps";
 		break;
+	case RR1:
+		return "r1";
+		break;
+	case RR2:
+		return "r2";
+		break;
+	case RR3:
+		return "r3";
+		break;
+	case RR4:
+		return "r4";
+		break;
+	case RR5:
+		return "r5";
+		break;
+	case RR6:
+		return "r6";
+		break;
+	case RR7:
+		return "r7";
+		break;
+	case RR8:
+		return "r8";
+		break;
+	default:
+		break;
 	}
+
 	return "InvalidReg";
 }
 
@@ -154,17 +168,35 @@ reg_t *ridx_to_rvm(reg_t r_idx, vm_t * vm)
 	reg_t *res = NULL;
 
 	switch (r_idx) {
-	case 0x00:
+	case RPS:
+		res = &vm->regs.ps;
+		break;
+	case RPC:
+		res = &vm->regs.pc;
+		break;
+	case RR1:
 		res = &vm->regs.r1;
 		break;
-	case 0x01:
+	case RR2:
 		res = &vm->regs.r2;
 		break;
-	case 0x02:
+	case RR3:
 		res = &vm->regs.r3;
 		break;
-	case 0x03:
+	case RR4:
 		res = &vm->regs.r4;
+		break;
+	case RR5:
+		res = &vm->regs.r5;
+		break;
+	case RR6:
+		res = &vm->regs.r6;
+		break;
+	case RR7:
+		res = &vm->regs.r7;
+		break;
+	case RR8:
+		res = &vm->regs.r8;
 		break;
 	default:
 		break;
@@ -194,10 +226,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 					printf("%s %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx),
 					       reg_to_str(rb_idx));
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
-				assert(rb_idx == 0x00 || rb_idx == 0x01
-				       || rb_idx == 0x02 || rb_idx == 0x03);
+				IS_VALID_REG(ra_idx);
+				IS_VALID_REG(rb_idx);
 				// register index to vm register
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -213,12 +243,12 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u8 rab = vm->code[++vm->regs.pc];
+				u8 rab;
+				COPY_PARTS8(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job     
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -236,8 +266,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -255,8 +284,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job     
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -274,10 +302,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 					printf("%s %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx),
 					       reg_to_str(rb_idx));
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
-				assert(rb_idx == 0x00 || rb_idx == 0x01
-				       || rb_idx == 0x02 || rb_idx == 0x03);
+				IS_VALID_REG(ra_idx);
+				IS_VALID_REG(rb_idx);
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
 					reg_t *rb = ridx_to_rvm(rb_idx, vm);
@@ -291,12 +317,12 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u8 rab = vm->code[++vm->regs.pc];
+				u8 rab;
+				COPY_PARTS8(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -314,8 +340,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -333,8 +358,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job     
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -352,10 +376,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 					printf("%s %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx),
 					       reg_to_str(rb_idx));
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
-				assert(rb_idx == 0x00 || rb_idx == 0x01
-				       || rb_idx == 0x02 || rb_idx == 0x03);
+				IS_VALID_REG(ra_idx);
+				IS_VALID_REG(rb_idx);
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
 					reg_t *rb = ridx_to_rvm(rb_idx, vm);
@@ -369,12 +391,12 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u8 rab = vm->code[++vm->regs.pc];
+				u8 rab;
+				COPY_PARTS8(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job     
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -392,8 +414,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -411,8 +432,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -430,10 +450,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 					printf("%s %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx),
 					       reg_to_str(rb_idx));
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
-				assert(rb_idx == 0x00 || rb_idx == 0x01
-				       || rb_idx == 0x02 || rb_idx == 0x03);
+				IS_VALID_REG(ra_idx);
+				IS_VALID_REG(rb_idx);
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
 					reg_t *rb = ridx_to_rvm(rb_idx, vm);
@@ -447,12 +465,12 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u8 rab = vm->code[++vm->regs.pc];
+				u8 rab;
+				COPY_PARTS8(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -470,8 +488,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -489,8 +506,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -508,10 +524,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 					printf("%s %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx),
 					       reg_to_str(rb_idx));
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
-				assert(rb_idx == 0x00 || rb_idx == 0x01
-				       || rb_idx == 0x02 || rb_idx == 0x03);
+				IS_VALID_REG(ra_idx);
+				IS_VALID_REG(rb_idx);
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
 					reg_t *rb = ridx_to_rvm(rb_idx, vm);
@@ -525,12 +539,12 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u8 rab = vm->code[++vm->regs.pc];
+				u8 rab;
+				COPY_PARTS8(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job     
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -548,8 +562,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -567,8 +580,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -586,10 +598,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 					printf("%s %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx),
 					       reg_to_str(rb_idx));
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
-				assert(rb_idx == 0x00 || rb_idx == 0x01
-				       || rb_idx == 0x02 || rb_idx == 0x03);
+				IS_VALID_REG(ra_idx);
+				IS_VALID_REG(rb_idx);
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
 					reg_t *rb = ridx_to_rvm(rb_idx, vm);
@@ -603,12 +613,12 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				// extract register and byte
 				reg_t ra_idx = vm->code[++vm->regs.pc];
-				u8 rab = vm->code[++vm->regs.pc];
+				u8 rab;
+				COPY_PARTS8(rab, vm->code, vm->regs.pc);
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -626,8 +636,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -645,8 +654,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s %.8x\n", c_inst.sname,
 					       reg_to_str(ra_idx), rab);
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
@@ -662,8 +670,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
 					assert(ra != NULL);
@@ -678,8 +685,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
 					assert(ra != NULL);
@@ -694,8 +700,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
 					vm->stack[vm->regs.ps++] = (u8) * ra;
@@ -708,8 +713,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
 					vm->stack[vm->regs.ps++] = (u16) * ra;
@@ -722,8 +726,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
 					vm->stack[vm->regs.ps++] = (u32) * ra;
@@ -737,8 +740,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
 					vm->regs.ps--;
@@ -754,8 +756,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
 					vm->regs.ps--;
@@ -771,8 +772,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				if (verbose)
 					printf("%s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
-				assert(ra_idx == 0x00 || ra_idx == 0x01
-				       || ra_idx == 0x02 || ra_idx == 0x03);
+				IS_VALID_REG(ra_idx);
 				if (execute) {
 					reg_t *ra = ridx_to_rvm(ra_idx, vm);
 					vm->regs.ps--;
@@ -821,10 +821,15 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				}
 				break;
 			}
+		case SYS_CALL:
+			{
+			   // TODO : Implement
+			   break;
+			}
 		case INVALID_OPCODE:
 			{
-				//XXX pass opcodes and continue
-				//XXX vm->regs.pc++;
+			   // XXX incase of an invalid opcode shall we
+			   // -ignore and continue ?
 				if (verbose)
 					printf("%s %.8x\n", c_inst.sname,
 					       c_inst.opcode);
@@ -875,7 +880,7 @@ reg_t inst_mul(reg_t a, reg_t b)
 
 reg_t inst_div(reg_t a, reg_t b)
 {
-	assert(b != 0);
+	assert(b != 0); // TODO better handling raise SIGFPE-like
 	a /= b;
 	return a;
 }

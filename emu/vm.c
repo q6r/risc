@@ -14,7 +14,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "emu.h"
+#include "vm.h"
 
 #define COPY_PARTS8(X, Y, Z) X = (X << 8) | Y[++Z]
 #define COPY_PARTS16(X, Y, Z) do { \
@@ -71,6 +71,8 @@ static inst inst_table[100] = {
 	{MOVID, "movid", OP_MOVID, inst_mov},
 	{PUSHID, "pushid", OP_PUSHID, NULL},
 	/* others */
+	{GSTK, "gstk", OP_GSTK, NULL},
+	{PSTK, "pstk", OP_PSTK, NULL},
 	{EXIT, "exit", OP_EXIT, NULL},
 	{SYS_CALL, "sys_call", OP_SYSCALL, NULL}
 };
@@ -90,7 +92,7 @@ bool init_vm(vm_t * vm, size_t cs, size_t ss)
 		perror("malloc");
 		return false;
 	}
-	vm->stack = (u8 *) malloc(sizeof(int8_t) * vm->stack_size);
+	vm->stack = (u32 *) malloc(sizeof(u32) * vm->stack_size);
 	if (vm->stack == NULL) {
 		perror("malloc");
 		free(vm->code);
@@ -220,10 +222,10 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case ADD:
 			{
 				// extract registers
-				reg_t ra_idx = vm->code[++vm->regs.pc];
-				reg_t rb_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
+				u8 rb_idx = vm->code[++vm->regs.pc];
 				if (verbose)
-					printf("%s %s %s\n", c_inst.sname,
+					printf(">>>>> %s %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx),
 					       reg_to_str(rb_idx));
 				IS_VALID_REG(ra_idx);
@@ -242,12 +244,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case ADDIB:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u8 rab;
 				COPY_PARTS8(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job     
 				if (execute) {
@@ -260,12 +263,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case ADDIW:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u16 rab;
 				COPY_PARTS16(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
@@ -278,12 +282,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case ADDID:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u32 rab;
 				COPY_PARTS32(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job     
 				if (execute) {
@@ -296,10 +301,10 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case SUB:
 			{
 				// extract registers
-				reg_t ra_idx = vm->code[++vm->regs.pc];
-				reg_t rb_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
+				u8 rb_idx = vm->code[++vm->regs.pc];
 				if (verbose)
-					printf("%s %s %s\n", c_inst.sname,
+					printf(">>>>> %s %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx),
 					       reg_to_str(rb_idx));
 				IS_VALID_REG(ra_idx);
@@ -316,12 +321,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case SUBIB:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u8 rab;
 				COPY_PARTS8(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
@@ -334,12 +340,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case SUBIW:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u16 rab;
 				COPY_PARTS16(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
@@ -352,12 +359,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case SUBID:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u32 rab;
 				COPY_PARTS32(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job     
 				if (execute) {
@@ -370,10 +378,10 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case MUL:
 			{
 				// extract registers
-				reg_t ra_idx = vm->code[++vm->regs.pc];
-				reg_t rb_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
+				u8 rb_idx = vm->code[++vm->regs.pc];
 				if (verbose)
-					printf("%s %s %s\n", c_inst.sname,
+					printf(">>>>> %s %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx),
 					       reg_to_str(rb_idx));
 				IS_VALID_REG(ra_idx);
@@ -390,12 +398,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case MULIB:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u8 rab;
 				COPY_PARTS8(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job     
 				if (execute) {
@@ -408,12 +417,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case MULIW:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u16 rab;
 				COPY_PARTS16(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
@@ -426,12 +436,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case MULID:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u32 rab;
 				COPY_PARTS32(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
@@ -444,10 +455,10 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case DIV:
 			{
 				// extract registers
-				reg_t ra_idx = vm->code[++vm->regs.pc];
-				reg_t rb_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
+				u8 rb_idx = vm->code[++vm->regs.pc];
 				if (verbose)
-					printf("%s %s %s\n", c_inst.sname,
+					printf(">>>>> %s %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx),
 					       reg_to_str(rb_idx));
 				IS_VALID_REG(ra_idx);
@@ -464,12 +475,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case DIVIB:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u8 rab;
 				COPY_PARTS8(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
@@ -482,12 +494,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case DIVIW:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u16 rab;
 				COPY_PARTS16(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
@@ -500,12 +513,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case DIVID:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u32 rab;
 				COPY_PARTS32(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
@@ -518,10 +532,10 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case XOR:
 			{
 				// extract registers
-				reg_t ra_idx = vm->code[++vm->regs.pc];
-				reg_t rb_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
+				u8 rb_idx = vm->code[++vm->regs.pc];
 				if (verbose)
-					printf("%s %s %s\n", c_inst.sname,
+					printf(">>>>> %s %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx),
 					       reg_to_str(rb_idx));
 				IS_VALID_REG(ra_idx);
@@ -538,12 +552,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case XORIB:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u8 rab;
 				COPY_PARTS8(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job     
 				if (execute) {
@@ -556,12 +571,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case XORIW:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u16 rab;
 				COPY_PARTS16(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
@@ -574,12 +590,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case XORID:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u32 rab;
 				COPY_PARTS32(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
@@ -592,10 +609,10 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case MOV:
 			{
 				// extract registers
-				reg_t ra_idx = vm->code[++vm->regs.pc];
-				reg_t rb_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
+				u8 rb_idx = vm->code[++vm->regs.pc];
 				if (verbose)
-					printf("%s %s %s\n", c_inst.sname,
+					printf(">>>>> %s %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx),
 					       reg_to_str(rb_idx));
 				IS_VALID_REG(ra_idx);
@@ -612,12 +629,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case MOVIB:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u8 rab;
 				COPY_PARTS8(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
@@ -630,12 +648,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case MOVIW:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u16 rab;
 				COPY_PARTS16(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
@@ -648,12 +667,13 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case MOVID:
 			{
 				// extract register and byte
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				u32 rab;
 				COPY_PARTS32(rab, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %s %.8x\n", c_inst.sname,
-					       reg_to_str(ra_idx), rab);
+					printf(">>>>> %s %s %.8x\n",
+					       c_inst.sname, reg_to_str(ra_idx),
+					       rab);
 				IS_VALID_REG(ra_idx);
 				// does job
 				if (execute) {
@@ -666,9 +686,9 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case INC:
 			{
 				// extract registers
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				if (verbose)
-					printf("%s %s\n", c_inst.sname,
+					printf(">>>>> %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
 				IS_VALID_REG(ra_idx);
 				if (execute) {
@@ -681,9 +701,9 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case DEC:
 			{
 				// extract registers
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				if (verbose)
-					printf("%s %s\n", c_inst.sname,
+					printf(">>>>> %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
 				IS_VALID_REG(ra_idx);
 				if (execute) {
@@ -696,9 +716,9 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case PUSHB:
 			{
 				// extract registers
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				if (verbose)
-					printf("%s %s\n", c_inst.sname,
+					printf(">>>>> %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
 				IS_VALID_REG(ra_idx);
 				if (execute) {
@@ -709,9 +729,9 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			}
 		case PUSHW:
 			{
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				if (verbose)
-					printf("%s %s\n", c_inst.sname,
+					printf(">>>>> %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
 				IS_VALID_REG(ra_idx);
 				if (execute) {
@@ -722,9 +742,9 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			}
 		case PUSHD:
 			{
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				if (verbose)
-					printf("%s %s\n", c_inst.sname,
+					printf(">>>>> %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
 				IS_VALID_REG(ra_idx);
 				if (execute) {
@@ -736,9 +756,9 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case POPB:
 			{
 				assert(vm->regs.ps > 0);
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				if (verbose)
-					printf("%s %s\n", c_inst.sname,
+					printf(">>>>> %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
 				IS_VALID_REG(ra_idx);
 				if (execute) {
@@ -752,9 +772,9 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case POPW:
 			{
 				assert(vm->regs.ps >= 0);
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				if (verbose)
-					printf("%s %s\n", c_inst.sname,
+					printf(">>>>> %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
 				IS_VALID_REG(ra_idx);
 				if (execute) {
@@ -768,9 +788,9 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 		case POPD:
 			{
 				assert(vm->regs.ps > 0);
-				reg_t ra_idx = vm->code[++vm->regs.pc];
+				u8 ra_idx = vm->code[++vm->regs.pc];
 				if (verbose)
-					printf("%s %s\n", c_inst.sname,
+					printf(">>>>> %s %s\n", c_inst.sname,
 					       reg_to_str(ra_idx));
 				IS_VALID_REG(ra_idx);
 				if (execute) {
@@ -784,7 +804,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 			{
 				reg_t ra = vm->code[++vm->regs.pc];
 				if (verbose)
-					printf("%s %.8x\n", c_inst.sname, ra);
+					printf(">>>>> %s %.8x\n", c_inst.sname,
+					       ra);
 				if (execute) {
 					vm->stack[vm->regs.ps++] = (u8) ra;
 				}
@@ -795,7 +816,8 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				u16 ra;
 				COPY_PARTS16(ra, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %.8x\n", c_inst.sname, ra);
+					printf(">>>>> %s %.8x\n", c_inst.sname,
+					       ra);
 				if (execute) {
 					vm->stack[vm->regs.ps++] = (u16) ra;
 				}
@@ -806,9 +828,38 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				u32 ra;
 				COPY_PARTS32(ra, vm->code, vm->regs.pc);
 				if (verbose)
-					printf("%s %.8x\n", c_inst.sname, ra);
+					printf(">>>>> %s %.8x\n", c_inst.sname,
+					       ra);
 				if (execute) {
 					vm->stack[vm->regs.ps++] = (u32) ra;
+				}
+				break;
+			}
+		case GSTK:
+			{
+				assert(vm->regs.ps > 0);
+				u8 ra_idx = vm->code[++vm->regs.pc];
+				if (verbose)
+					printf(">>>>> %s %s\n", c_inst.sname,
+					       reg_to_str(ra_idx));
+				IS_VALID_REG(ra_idx);
+				if (execute) {
+					reg_t *ra = ridx_to_rvm(ra_idx, vm);
+					*ra = &vm->stack[vm->regs.ps - 1];
+				}
+				break;
+			}
+		case PSTK:
+			{
+				u8 ra_idx = vm->code[++vm->regs.pc];
+				if (verbose)
+					printf(">>>>> %s %s\n", c_inst.sname,
+					       reg_to_str(ra_idx));
+				IS_VALID_REG(ra_idx);
+				if (execute) {
+					reg_t *ra = ridx_to_rvm(ra_idx, vm);
+					vm->stack[vm->regs.ps++] =
+					    *(u32 *) (*ra);
 				}
 				break;
 			}
@@ -831,7 +882,7 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				// XXX incase of an invalid opcode shall we
 				// -ignore and continue ?
 				if (verbose)
-					printf("%s %.8x\n", c_inst.sname,
+					printf(">>>>> %s %.8x\n", c_inst.sname,
 					       c_inst.opcode);
 				if (execute) {
 					return false;

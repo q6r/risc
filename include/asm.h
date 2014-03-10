@@ -2,7 +2,7 @@
 #define __ASM_H_
 
 #include <stdbool.h>
-#include "emu.h"
+#include "vm.h"
 
 #define INVALID_REG 0xff
 

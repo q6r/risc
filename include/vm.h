@@ -12,12 +12,21 @@
 #include <unistd.h>
 
 #define SHOW_REGS \
-printf("pc = %.8x\n", vm->regs.pc);\
-printf("ps = %.8x\n", vm->regs.ps);\
-printf("r1 = %.8x\n", vm->regs.r1);\
-printf("r2 = %.8x\n", vm->regs.r2);\
-printf("r3 = %.8x\n", vm->regs.r3);\
-printf("r4 = %.8x\n", vm->regs.r4);\
+do { \
+printf("| pc = %.8x ps = %.8x\n", vm->regs.pc, vm->regs.ps);\
+printf("| r1 = %.8x r2 = %.8x\n", vm->regs.r1, vm->regs.r2);\
+printf("| r3 = %.8x r4 = %.8x\n", vm->regs.r3, vm->regs.r4);\
+printf("| r5 = %.8x r6 = %.8x\n", vm->regs.r5, vm->regs.r6);\
+printf("| r7 = %.8x r8 = %.8x\n", vm->regs.r7, vm->regs.r8);\
+int i; \
+if(vm->regs.ps == 0) \
+	printf("No stack\n"); \
+else { \
+		for(i=0;i<vm->regs.ps;i++) printf( \
+		  "stack[%d@%p] = %.8x\n", i, \
+			&vm->stack[i], vm->stack[i]); \
+} \
+} while(0) \
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -31,6 +40,7 @@ enum INST_NAME {
 	ADDID, SUBID, MULID, DIVID, XORID, MOVID,	/* immd(32) */
 	PUSHB, PUSHW, PUSHD, POPB, POPW, POPD,	/* reg(reg_t) */
 	PUSHIB, PUSHIW, PUSHID,	/* immu(32,16,8) */
+	GSTK, PSTK,
 	EXIT, SYS_CALL, INVALID_OPCODE
 };
 
@@ -79,6 +89,8 @@ typedef struct {
 #define OP_PUSHID 0xdb
 #define OP_EXIT 0xaf
 #define OP_SYSCALL 0xff
+#define OP_GSTK 0xe1
+#define OP_PSTK 0xe2
 
 // Registers references
 // XXX : Maybe convert to reg_table[] ?
@@ -111,7 +123,7 @@ typedef struct {
 	size_t code_size;
 	size_t stack_size;
 	u8 *code;
-	u8 *stack;
+	u32 *stack;
 } vm_t;
 
 // reg

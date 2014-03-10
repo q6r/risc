@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "asm.h"
-#include "emu.h"
+#include "vm.h"
 
 int main(int argc, char **argv)
 {

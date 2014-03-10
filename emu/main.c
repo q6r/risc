@@ -6,9 +6,40 @@
 #include <stdint.h>
 #include <string.h>
 #include <config.h>
-#include "emu.h"
+#include "vm.h"
 
-const uint8_t code[] = {
+const uint8_t code[] = {	// XXX None of thse should fail assert
+// SET 5 TEST FOR STACK
+	OP_PUSHID, 0x11, 0x11, 0x11, 0x11,
+	OP_PUSHID, 0x22, 0x22, 0x22, 0x22,
+	OP_PUSHIW, 0x33, 0x33,
+	OP_PUSHIW, 0x44, 0x44,
+	OP_PUSHIB, 0x55,
+	OP_PUSHIB, 0x66,
+	OP_POPB, RR1,
+	OP_POPB, RR2,
+	OP_POPW, RR3,
+	OP_POPW, RR4,
+	OP_POPD, RR5,
+	OP_POPD, RR6,
+	OP_PUSHB, RR6,
+	OP_PUSHW, RR6,
+	OP_PUSHD, RR6,
+	OP_POPD, RR1,
+	OP_POPD, RR1,
+	OP_POPD, RR1,
+	//OP_POPD, RR2, // XXX Nothing to pop better handling
+	OP_PUSHID, 0x11, 0x11, 0x11, 0x11,
+	OP_PUSHID, 0x22, 0x22, 0x22, 0x22,
+	OP_PUSHID, 0x33, 0x33, 0x33, 0x33,
+	OP_PUSHID, 0x44, 0x44, 0x44, 0x44,
+	OP_GSTK, RR1,		// Should contain pointer in stack to 0x44444444
+	OP_DEC, RR1,
+	OP_DEC, RR1,
+	OP_DEC, RR1,
+	OP_DEC, RR1,
+	OP_PSTK, RR1,		// Should put 0x333333 into stack
+//      OP_EXIT,
 // SET 4 TEST 32bit
 	OP_ADDID, RR1, 0x11, 0x22, 0x33, 0x44,	/* addid r1, 0x11223344 */
 	OP_ADDID, RR2, 0x11, 0x22, 0x33, 0x44,	/* addid r2, 0x11223344 */

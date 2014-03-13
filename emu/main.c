@@ -6,9 +6,22 @@
 #include <stdint.h>
 #include <string.h>
 #include <config.h>
+#include <sys/syscall.h>
 #include "vm.h"
 
 const uint8_t code[] = {	// XXX None of thse should fail assert
+// SET 6 TEST FOR CALLS
+	OP_MOVIB, RR1, SYS_write,	/* r1 = sys_write */
+	OP_MOVIB, RR2, 0x00,	/* r2 = stdout */
+	OP_PUSHID, 0x6c, 0x6c, 0x65, 0x68,	/* hell */
+	OP_GSTK, RR3,		/* stack ptr to string */
+	OP_PUSHID, 0x72, 0x6f, 0x77, 0x20,	/*  worl */
+	OP_PUSHID, 0x00, 0x0a, 0x64, 0x6c,	/* d\n\0 */
+	OP_MOVIB, RR4, 11,	/* size */
+	OP_SYSCALL,		/* syscall */
+	OP_MOVIB, RR1, SYS_exit,	// r1 = sys_exit
+	OP_MOVIB, RR2, 0xff,	// r2 = 0xff
+	OP_SYSCALL,		// r1 = sys_exit(r2);
 // SET 5 TEST FOR STACK
 	OP_PUSHID, 0x11, 0x11, 0x11, 0x11,
 	OP_PUSHID, 0x22, 0x22, 0x22, 0x22,

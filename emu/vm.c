@@ -1,4 +1,5 @@
 /* - qnix
+ * TODO: Continue implementing syscall
  * TODO: Add more tests for new registers
  * TODO: Implement a sys_call interface
  * TODO: fix values in reg_t vs u32 vs u16 vs u8
@@ -14,6 +15,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <sys/syscall.h>
 #include "vm.h"
 
 #define COPY_PARTS8(X, Y, Z) X = (X << 8) | Y[++Z]
@@ -74,7 +76,7 @@ static inst inst_table[100] = {
 	{GSTK, "gstk", OP_GSTK, NULL},
 	{PSTK, "pstk", OP_PSTK, NULL},
 	{EXIT, "exit", OP_EXIT, NULL},
-	{SYS_CALL, "sys_call", OP_SYSCALL, NULL}
+	{SYSCALL, "sys_call", OP_SYSCALL, NULL}
 };
 
 bool init_vm(vm_t * vm, size_t cs, size_t ss)
@@ -872,9 +874,72 @@ bool process_code(vm_t * vm, bool execute, bool verbose)
 				}
 				break;
 			}
-		case SYS_CALL:
+		case SYSCALL:
 			{
-				// TODO : Implement
+				reg_t scall = vm->regs.r1;
+				reg_t nargs = get_syscall_nargs(scall);
+				if (nargs == -1) {
+					printf("Invalid system call\n");
+					return false;
+				}
+				printf("%s_%.2x(%d arguments)\n",
+				       c_inst.sname, scall, nargs);
+				// do a syscall depending on nargs
+				// number
+				if (nargs == 0) {
+					vm->regs.r1 = syscall(scall);
+					printf("0 returned %d\n", vm->regs.r1);
+				} else if (nargs == 1) {
+					vm->regs.r1 = syscall(scall,
+							      vm->regs.r2);
+					printf("1 returned %d\n", vm->regs.r1);
+				} else if (nargs == 2) {
+					vm->regs.r1 = syscall(scall,
+							      vm->regs.r2,
+							      vm->regs.r3);
+					printf("2 returned %d\n", vm->regs.r1);
+				} else if (nargs == 3) {
+					vm->regs.r1 = syscall(scall,
+							      vm->regs.r2,
+							      vm->regs.r3,
+							      vm->regs.r4);
+					printf("3 returned %d\n", vm->regs.r1);
+				} else if (nargs == 4) {
+					vm->regs.r1 = syscall(scall,
+							      vm->regs.r2,
+							      vm->regs.r3,
+							      vm->regs.r4,
+							      vm->regs.r5);
+					printf("4 returned %d\n", vm->regs.r1);
+				} else if (nargs == 5) {
+					vm->regs.r1 = syscall(scall,
+							      vm->regs.r2,
+							      vm->regs.r3,
+							      vm->regs.r4,
+							      vm->regs.r5,
+							      vm->regs.r6);
+					printf("5 returned %d\n", vm->regs.r1);
+				} else if (nargs == 6) {
+					vm->regs.r1 = syscall(scall,
+							      vm->regs.r2,
+							      vm->regs.r3,
+							      vm->regs.r4,
+							      vm->regs.r5,
+							      vm->regs.r6,
+							      vm->regs.r7);
+					printf("6 returned %d\n", vm->regs.r1);
+				} else if (nargs == 7) {
+					vm->regs.r1 = syscall(scall,
+							      vm->regs.r2,
+							      vm->regs.r3,
+							      vm->regs.r4,
+							      vm->regs.r5,
+							      vm->regs.r6,
+							      vm->regs.r7,
+							      vm->regs.r8);
+					printf("7 returned %d\n", vm->regs.r1);
+				}
+				// int n = get_syscall_regn(r1);
 				break;
 			}
 		case INVALID_OPCODE:
@@ -958,4 +1023,39 @@ reg_t inst_dec(reg_t a, reg_t unused)
 {
 	a--;
 	return a;
+}
+
+reg_t get_syscall_nargs(reg_t scall)
+{
+	switch (scall) {
+	case SYS_exit:
+		return 1;
+		break;
+	case SYS_fork:
+		return 1;
+		break;
+	case SYS_read:
+		return 3;
+		break;
+	case SYS_write:
+		return 3;
+		break;
+	case SYS_open:
+		return 3;
+		break;
+	case SYS_close:
+		return 1;
+		break;
+	case SYS_creat:
+		return 2;
+		break;
+	case SYS_link:
+		return 2;
+		break;
+	case SYS_unlink:
+		return 1;
+		break;
+		//.....
+	}
+	return -1;
 }

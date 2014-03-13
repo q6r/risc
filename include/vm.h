@@ -41,7 +41,7 @@ enum INST_NAME {
 	PUSHB, PUSHW, PUSHD, POPB, POPW, POPD,	/* reg(reg_t) */
 	PUSHIB, PUSHIW, PUSHID,	/* immu(32,16,8) */
 	GSTK, PSTK,
-	EXIT, SYS_CALL, INVALID_OPCODE
+	EXIT, SYSCALL, INVALID_OPCODE
 };
 
 typedef struct {
@@ -146,5 +146,6 @@ inst get_instruction(u8 opcode);
 reg_t *ridx_to_rvm(reg_t r_idx, vm_t * vm);
 
 const char *reg_to_str(reg_t r);
+reg_t get_syscall_nargs(reg_t scall);
 
 #endif

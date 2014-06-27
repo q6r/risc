@@ -11,44 +11,27 @@
 #include <stdint.h>
 #include <unistd.h>
 
-#define SHOW_REGS \
-do { \
-printf("| pc = %.8x ps = %.8x\n", vm->regs.pc, vm->regs.ps);\
-printf("| r1 = %.8x r2 = %.8x\n", vm->regs.r1, vm->regs.r2);\
-printf("| r3 = %.8x r4 = %.8x\n", vm->regs.r3, vm->regs.r4);\
-printf("| r5 = %.8x r6 = %.8x\n", vm->regs.r5, vm->regs.r6);\
-printf("| r7 = %.8x r8 = %.8x\n", vm->regs.r7, vm->regs.r8);\
-int i; \
-if(vm->regs.ps == 0) \
-	printf("No stack\n"); \
-else { \
-		for(i=0;i<vm->regs.ps;i++) printf( \
-		  "stack[%d@%p] = %.8x\n", i, \
-			&vm->stack[i], vm->stack[i]); \
-} \
-} while(0) \
-
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
 typedef u32 reg_t;
 
 typedef enum {
-	ADD, SUB, MUL, DIV, XOR, MOV, INC, DEC,	/* reg(reg_t) */
-	ADDIB, SUBIB, MULIB, DIVIB, XORIB, MOVIB,	/* immb(8) */
-	ADDIW, SUBIW, MULIW, DIVIW, XORIW, MOVIW,	/* immw(16) */
-	ADDID, SUBID, MULID, DIVID, XORID, MOVID,	/* immd(32) */
-	PUSHB, PUSHW, PUSHD, POPB, POPW, POPD,	/* reg(reg_t) */
-	PUSHIB, PUSHIW, PUSHID,	/* immu(32,16,8) */
-	GSTK, PSTK,
-	EXIT, SYSCALL, INVALID_OPCODE
+    ADD, SUB, MUL, DIV, XOR, MOV, INC, DEC,	/* reg(reg_t) */
+    ADDIB, SUBIB, MULIB, DIVIB, XORIB, MOVIB,	/* immb(8) */
+    ADDIW, SUBIW, MULIW, DIVIW, XORIW, MOVIW,	/* immw(16) */
+    ADDID, SUBID, MULID, DIVID, XORID, MOVID,	/* immd(32) */
+    PUSHB, PUSHW, PUSHD, POPB, POPW, POPD,	/* reg(reg_t) */
+    PUSHIB, PUSHIW, PUSHID,	/* immu(32,16,8) */
+    GSTK, PSTK,
+    EXIT, SYSCALL, INVALID_OPCODE
 } INST_NAME;
 
 typedef struct {
-	INST_NAME name;
-	char sname[32];
-	u8 opcode;
-        reg_t(*func) (reg_t a, reg_t b);
+    INST_NAME name;
+    char sname[32];
+    u8 opcode;
+    reg_t(*func) (reg_t a, reg_t b);
 } inst;
 
 // opcodes of instrucions
@@ -106,24 +89,24 @@ typedef struct {
 #define RR8 0x09
 
 typedef struct {
-	reg_t pc;		/*  RPC */
-	reg_t ps;		/*  RPS */
-	reg_t r1,		/*  RR1 */
-	 r2,			/*  RR2 */
-	 r3,			/*  RR3 */
-	 r4,			/*  RR4 */
-	 r5,			/*  RR5 */
-	 r6,			/*  RR6 */
-	 r7,			/*  RR7 */
-	 r8;			/*  RR8 */
+    reg_t pc;		/*  RPC */
+    reg_t ps;		/*  RPS */
+    reg_t r1,		/*  RR1 */
+          r2,			/*  RR2 */
+          r3,			/*  RR3 */
+          r4,			/*  RR4 */
+          r5,			/*  RR5 */
+          r6,			/*  RR6 */
+          r7,			/*  RR7 */
+          r8;			/*  RR8 */
 } regs_t;
 
 typedef struct {
-	regs_t regs;
-	size_t code_size;
-	size_t stack_size;
-	u8 *code;
-	u32 *stack;
+    regs_t regs;
+    size_t code_size;
+    size_t stack_size;
+    u8 *code;
+    u32 *stack;
 } vm_t;
 
 // reg
@@ -139,7 +122,7 @@ reg_t inst_dec(reg_t a, reg_t unused);
 
 bool init_vm(vm_t * vm, size_t cs, size_t ss);
 bool term_vm(vm_t * vm);
-bool process_code(vm_t * vm, bool execute, bool verbose);
+bool process_code(vm_t * vm, bool verbose);
 
 INST_NAME get_inst_name(const u8 opcode);
 inst get_instruction(const u8 opcode);
@@ -147,5 +130,7 @@ reg_t *ridx_to_rvm(reg_t r_idx, vm_t * vm);
 
 const char *reg_to_str(reg_t r);
 reg_t get_syscall_nargs(reg_t scall);
+
+bool show_regs(vm_t *vm);
 
 #endif

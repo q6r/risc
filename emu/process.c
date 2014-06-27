@@ -10,10 +10,10 @@ bool is_valid_reg(u8 r_idx) {
     if(r_idx != RR1 || r_idx != RR2 ||
       r_idx != RR3 || r_idx != RR4 || r_idx != RR5 || r_idx != RR6 ||
         r_idx != RR7 || r_idx != RR8 || r_idx != RPS || r_idx != RPC) {
-            return false;
+            return true;
         }
 
-    return true;
+    return false;
 }
 
 
@@ -85,7 +85,8 @@ bool process_addid(inst c_inst, vm_t *vm, bool verbose) {
         printf("%s >>>>> %s %s %.8x\n",
           __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
         rab);
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     // does job     
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     if(ra == NULL)
@@ -220,7 +221,8 @@ bool process_muliw(inst c_inst, vm_t *vm, bool verbose) {
         printf("%s >>>>> %s %s %.8x\n",
           __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
         rab);
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     // does job
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     if(ra == NULL)
@@ -238,7 +240,8 @@ bool process_mulid(inst c_inst, vm_t *vm, bool verbose) {
         printf("%s >>>>> %s %s %.8x\n",
           __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
         rab);
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     // does job
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     if(ra == NULL)
@@ -259,8 +262,8 @@ bool process_div(inst c_inst, vm_t *vm, bool verbose) {
         printf("%s >>>>> %s %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
           reg_to_str(ra_idx),
         reg_to_str(rb_idx));
-    IS_VALID_REG(ra_idx);
-    IS_VALID_REG(rb_idx);
+    if(!is_valid_reg(ra_idx) || !is_valid_reg(rb_idx))
+        return false;
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     reg_t *rb = ridx_to_rvm(rb_idx, vm);
     if(ra == NULL || rb == NULL)
@@ -278,7 +281,8 @@ bool process_divib(inst c_inst, vm_t *vm, bool verbose) {
         printf("%s >>>>> %s %s %.8x\n",
           __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
         rab);
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     // does job
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     if(ra == NULL)
@@ -296,7 +300,8 @@ bool process_diviw(inst c_inst, vm_t *vm, bool verbose) {
         printf("%s >>>>> %s %s %.8x\n",
           __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
         rab);
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     // does job
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     if(ra == NULL)
@@ -314,7 +319,8 @@ bool process_divid(inst c_inst, vm_t *vm, bool verbose) {
         printf("%s >>>>> %s %s %.8x\n",
           __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
         rab);
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     // does job
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     if(ra == NULL)
@@ -333,8 +339,8 @@ bool process_xor(inst c_inst, vm_t *vm, bool verbose) {
         printf("%s >>>>> %s %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
           reg_to_str(ra_idx),
         reg_to_str(rb_idx));
-    IS_VALID_REG(ra_idx);
-    IS_VALID_REG(rb_idx);
+    if(!is_valid_reg(ra_idx) || !is_valid_reg(rb_idx))
+        return false;
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     reg_t *rb = ridx_to_rvm(rb_idx, vm);
     if(ra == NULL || rb == NULL)
@@ -351,7 +357,8 @@ bool process_xorib(inst c_inst, vm_t *vm, bool verbose) {
         printf("%s >>>>> %s %s %.8x\n",
           __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
         rab);
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     // does job     
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     if(ra == NULL)
@@ -368,7 +375,8 @@ bool process_xoriw(inst c_inst, vm_t *vm, bool verbose) {
         printf("%s >>>>> %s %s %.8x\n",
           __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
         rab);
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     // does job
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     if(ra == NULL)
@@ -385,7 +393,8 @@ bool process_xorid(inst c_inst, vm_t *vm, bool verbose) {
         printf("%s >>>>> %s %s %.8x\n",
           __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
         rab);
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     // does job
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     if(ra == NULL)
@@ -404,8 +413,8 @@ bool process_mov(inst c_inst, vm_t *vm, bool verbose) {
         printf("%s >>>>> %s %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
           reg_to_str(ra_idx),
         reg_to_str(rb_idx));
-    IS_VALID_REG(ra_idx);
-    IS_VALID_REG(rb_idx);
+    if(!is_valid_reg(ra_idx) || !is_valid_reg(rb_idx))
+        return false;
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     reg_t *rb = ridx_to_rvm(rb_idx, vm);
     if(ra == NULL || rb == NULL)
@@ -424,7 +433,8 @@ bool process_movib(inst c_inst, vm_t *vm, bool verbose) {
         printf("%s >>>>> %s %s %.8x\n",
           __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
         rab);
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     // does job
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     if(ra == NULL)
@@ -443,7 +453,8 @@ bool process_moviw(inst c_inst, vm_t *vm, bool verbose) {
         printf("%s >>>>> %s %s %.8x\n",
           __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
         rab);
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     // does job
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     if(ra == NULL)
@@ -461,7 +472,8 @@ bool process_movid(inst c_inst, vm_t *vm, bool verbose) {
         printf("%s >>>>> %s %s %.8x\n",
           __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
         rab);
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     // does job
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     if(ra == NULL)
@@ -477,7 +489,8 @@ bool process_inc(inst c_inst, vm_t *vm, bool verbose) {
     if (verbose)
         printf("%s >>>>> %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
           reg_to_str(ra_idx));
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     if(ra == NULL)
         return false;
@@ -491,7 +504,8 @@ bool process_dec(inst c_inst, vm_t *vm, bool verbose) {
     if (verbose)
         printf("%s >>>>> %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
           reg_to_str(ra_idx));
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     if(ra == NULL)
         return false;
@@ -506,7 +520,8 @@ bool process_pushb(inst c_inst, vm_t *vm, bool verbose) {
     if (verbose)
         printf("%s >>>>> %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
           reg_to_str(ra_idx));
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     vm->stack[vm->regs.ps++] = (u8) * ra;
     return true;
@@ -516,7 +531,8 @@ bool process_pushw(inst c_inst, vm_t *vm, bool verbose) {
     if (verbose)
         printf("%s >>>>> %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
           reg_to_str(ra_idx));
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     vm->stack[vm->regs.ps++] = (u16) * ra;
     return true;
@@ -526,7 +542,8 @@ bool process_pushd(inst c_inst, vm_t *vm, bool verbose) {
     if (verbose)
         printf("%s >>>>> %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
           reg_to_str(ra_idx));
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     vm->stack[vm->regs.ps++] = (u32) * ra;
     return true;
@@ -539,7 +556,8 @@ bool process_popb(inst c_inst, vm_t *vm, bool verbose) {
     if (verbose)
         printf("%s >>>>> %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
           reg_to_str(ra_idx));
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     vm->regs.ps--;
     *ra = (u8) vm->stack[vm->regs.ps];
@@ -553,7 +571,8 @@ bool process_popw(inst c_inst, vm_t *vm, bool verbose) {
     if (verbose)
         printf("%s >>>>> %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
           reg_to_str(ra_idx));
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     vm->regs.ps--;
     *ra = (u16) vm->stack[vm->regs.ps];
@@ -566,7 +585,8 @@ bool process_popd(inst c_inst, vm_t *vm, bool verbose) {
     if (verbose)
         printf("%s >>>>> %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
           reg_to_str(ra_idx));
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     vm->regs.ps--;
     *ra = (u32) vm->stack[vm->regs.ps];
@@ -611,7 +631,8 @@ bool process_gstk(inst c_inst, vm_t *vm, bool verbose) {
     if (verbose)
         printf("%s >>>>> %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
           reg_to_str(ra_idx));
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     *ra = &vm->stack[vm->regs.ps - 1];
     return true;
@@ -623,7 +644,8 @@ bool process_pstk(inst c_inst, vm_t *vm, bool verbose) {
     if (verbose)
         printf("%s >>>>> %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
           reg_to_str(ra_idx));
-    IS_VALID_REG(ra_idx);
+    if(!is_valid_reg(ra_idx))
+        return false;
     reg_t *ra = ridx_to_rvm(ra_idx, vm);
     vm->stack[vm->regs.ps++] =
     *(u32 *) (*ra);
@@ -633,7 +655,7 @@ bool process_pstk(inst c_inst, vm_t *vm, bool verbose) {
 bool process_exit(inst c_inst, vm_t *vm, bool verbose) {
     if (verbose)
         printf("%s >>> %s\n", __PRETTY_FUNCTION__, c_inst.sname);
-    return true;
+    return false;
 }
 
 

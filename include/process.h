@@ -1,4 +1,5 @@
-#ifndef PROCESS_H_
+#ifndef __PROCESS_H__
+#define __PROCESS_H__
 #include <stdio.h>
 #include <stdbool.h>
 #include <assert.h>
@@ -13,10 +14,6 @@
 			EXTRACT_16_ARR(X, Y, Z); \
 			EXTRACT_16_ARR(X, Y, Z); \
 			} while(0)
-
-#define IS_VALID_REG(x) assert(x == RR1 || x == RR2 || \
-  x == RR3 || x == RR4 || x == RR5 || x == RR6 || \
-  x == RR7 || x == RR8 || x == RPS || x == RPC)
 
 bool is_valid_reg(u8 r_idx);
 

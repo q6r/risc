@@ -187,7 +187,7 @@ int main()
 		return -1;
 	}
 	memcpy(vm.code, code, sizeof code);
-	if (process_code(&vm, true, true) == false) {
+	if (process_code(&vm, true) == false) {
 		printf("Failed processing code\n");
 	}
 	term_vm(&vm);

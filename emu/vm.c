@@ -195,224 +195,228 @@ reg_t *ridx_to_rvm(reg_t r_idx, vm_t * vm)
     return res;
 }
 
-bool process_code(vm_t * vm, bool execute, bool verbose)
+bool process_code(vm_t * vm, bool verbose)
 {
-    // then nothing to do
-    if (!execute && !verbose) {
-        return false;
-    }
 
     for (vm->regs.pc = 0; vm->regs.pc < (reg_t) vm->code_size;) {
         u8 opcode = vm->code[vm->regs.pc];
         inst c_inst = get_instruction(opcode);
-        SHOW_REGS;
+        bool pstat = false;
+        if(verbose) {
+            show_regs(vm);
+        }
         switch (c_inst.name) {
         case ADD:
            {
-              process_add(c_inst, vm, true);
+              pstat = process_add(c_inst, vm, true);
               break;
            }
         case ADDIB:
            {
-              process_addib(c_inst, vm, true);
+              pstat = process_addib(c_inst, vm, true);
               break;
            }
         case ADDIW:
            {
-              process_addiw(c_inst, vm, true);
+              pstat = process_addiw(c_inst, vm, true);
               break;
            }
         case ADDID:
            {
-              process_addid(c_inst, vm, true);
+              pstat = process_addid(c_inst, vm, true);
               break;
            }
         case SUB:
            {
-              process_sub(c_inst, vm, true);	
+              pstat = process_sub(c_inst, vm, true);	
               break;
            }
         case SUBIB:
            {
-              process_subib(c_inst, vm, true);
+              pstat = process_subib(c_inst, vm, true);
               break;
            }
         case SUBIW:
            {
-              process_subiw(c_inst, vm, true);
+              pstat = process_subiw(c_inst, vm, true);
               break;
            }
         case SUBID:
            {
-              process_subid(c_inst, vm, true);
+              pstat = process_subid(c_inst, vm, true);
               break;
            }
         case MUL:
            {
-              process_mul(c_inst, vm, true);
+              pstat = process_mul(c_inst, vm, true);
               break;
            }
         case MULIB:
            {
-              process_mulib(c_inst, vm, true);
+              pstat = process_mulib(c_inst, vm, true);
               break;
            }
         case MULIW:
            {
-              process_muliw(c_inst, vm, true);
+              pstat = process_muliw(c_inst, vm, true);
               break;
            }
         case MULID:
            {
-              process_mulid(c_inst, vm, true);
+              pstat = process_mulid(c_inst, vm, true);
               break;
            }
         case DIV:
            {
-              process_div(c_inst, vm, true);
+              pstat = process_div(c_inst, vm, true);
               break;
            }
         case DIVIB:
            {
-              process_divib(c_inst, vm, true);
+              pstat = process_divib(c_inst, vm, true);
               break;
            }
         case DIVIW:
            {
-              process_diviw(c_inst, vm, true);
+              pstat = process_diviw(c_inst, vm, true);
               break;
            }
         case DIVID:
            {
-              process_divid(c_inst, vm, true);
+              pstat = process_divid(c_inst, vm, true);
               break;
            }
         case XOR:
            {
-              process_xor(c_inst, vm, true);
+              pstat = process_xor(c_inst, vm, true);
               break;
            }
         case XORIB:
            {
-              process_xorib(c_inst, vm, true);
+              pstat = process_xorib(c_inst, vm, true);
               break;
            }
         case XORIW:
            {
-              process_xoriw(c_inst, vm, true);
+              pstat = process_xoriw(c_inst, vm, true);
               break;
            }
         case XORID:
            {
-              process_xorid(c_inst, vm, true);
+              pstat = process_xorid(c_inst, vm, true);
               break;
            }
         case MOV:
            {
-              process_mov(c_inst, vm, true);
+              pstat = process_mov(c_inst, vm, true);
               break;
            }
         case MOVIB:
            {
-              process_movib(c_inst, vm, true);
+              pstat = process_movib(c_inst, vm, true);
               break;
            }
         case MOVIW:
            {
-              process_moviw(c_inst, vm, true);
+              pstat = process_moviw(c_inst, vm, true);
               break;
            }
         case MOVID:
            {
-              process_movid(c_inst, vm, true);
+              pstat = process_movid(c_inst, vm, true);
               break;
            }
         case INC:
            {
-              process_inc(c_inst, vm, true);
+              pstat = process_inc(c_inst, vm, true);
               break;
            }
         case DEC:
            {
-              process_dec(c_inst, vm, true);
+              pstat = process_dec(c_inst, vm, true);
               break;
            }
         case PUSHB:
            {
-              process_pushb(c_inst, vm, true);
+              pstat = process_pushb(c_inst, vm, true);
               break;
            }
         case PUSHW:
            {
-              process_pushw(c_inst, vm, true);
+              pstat = process_pushw(c_inst, vm, true);
               break;
            }
         case PUSHD:
            {
-              process_pushd(c_inst, vm, true);
+              pstat = process_pushd(c_inst, vm, true);
               break;
            }
         case POPB:
            {
-              process_popb(c_inst, vm, true);
+              pstat = process_popb(c_inst, vm, true);
               break;
            }
         case POPW:
            {
-              process_popw(c_inst, vm, true);
+              pstat = process_popw(c_inst, vm, true);
               break;
            }
         case POPD:
            {
-              process_popd(c_inst, vm, true);
+              pstat = process_popd(c_inst, vm, true);
               break;
            }
         case PUSHIB:
            {
-              process_pushib(c_inst, vm, true);
+              pstat = process_pushib(c_inst, vm, true);
               break;
            }
         case PUSHIW:
            {
-              process_pushiw(c_inst, vm, true);
+              pstat = process_pushiw(c_inst, vm, true);
               break;
            }
         case PUSHID:
            {
-              process_pushid(c_inst, vm, true);
+              pstat = process_pushid(c_inst, vm, true);
               break;
            }
         case GSTK:
            {
-              process_gstk(c_inst, vm, true);
+              pstat = process_gstk(c_inst, vm, true);
               break;
            }
         case PSTK:
            {
-              process_gstk(c_inst, vm, true);
+              pstat = process_gstk(c_inst, vm, true);
               break;
            }
         case EXIT:
            {
-              process_exit(c_inst, vm, true);
+              pstat = process_exit(c_inst, vm, true);
               break;
            }
         case SYSCALL:
            {
               reg_t scall = vm->regs.r1;
               reg_t nargs = get_syscall_nargs(scall);
-              process_syscall(scall, nargs, c_inst, vm, true);
+              pstat = process_syscall(scall, nargs, c_inst, vm, true);
               break;
            }
         case INVALID_OPCODE:
            {
-              process_invalid(c_inst, vm, true);
+              pstat = process_invalid(c_inst, vm, true);
               break;
            }
         default:
-          printf("default\n");
           return false;
         };
+
+        // previous processed opcode failed || exit
+        if(pstat == false) {
+            return false;
+        }
+
         vm->regs.pc++;
     }
 
@@ -516,4 +520,33 @@ reg_t get_syscall_nargs(reg_t scall)
       //.....
     }
     return -1;
+}
+
+
+bool show_regs(vm_t *vm) {
+
+    int i;
+    if(vm == NULL)
+        return false;
+    printf(
+      "-----------------------------------------------------------\n"
+    "| pc = %.8x ps = %.8x r1 = %.8x r2 = %.8x |\n"  
+    "| r3 = %.8x r4 = %.8x r5 = %.8x r6 = %.8x |\n"
+    "| r7 = %.8x r8 = %.8x ........................... |\n"
+    "-----------------------------------------------------------\n"
+    , vm->regs.pc, vm->regs.ps, vm->regs.r1, vm->regs.r2
+    , vm->regs.r3, vm->regs.r4, vm->regs.r5, vm->regs.r6
+    , vm->regs.r7, vm->regs.r8);
+    if(vm->regs.ps == 0)
+        printf("|> No stack\n");
+    else {
+        for(i=0;i<vm->regs.ps;i++) {
+            printf(
+              "|> stack[%d@%p] = %.8x\n", i,
+            &vm->stack[i], vm->stack[i]);
+        }
+    }
+
+
+    return true;
 }

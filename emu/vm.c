@@ -202,9 +202,6 @@ bool process_code(vm_t * vm, bool verbose)
         u8 opcode = vm->code[vm->regs.pc];
         inst c_inst = get_instruction(opcode);
         bool pstat = false;
-        if(verbose) {
-            show_regs(vm);
-        }
         switch (c_inst.name) {
         case ADD:
            {
@@ -411,6 +408,10 @@ bool process_code(vm_t * vm, bool verbose)
         default:
           return false;
         };
+
+        if(verbose) {
+            show_regs(vm);
+        }
 
         // previous processed opcode failed || exit
         if(pstat == false) {

@@ -33,7 +33,7 @@ typedef uint16_t u16;
 typedef uint32_t u32;
 typedef u32 reg_t;
 
-enum INST_NAME {
+typedef enum {
 	ADD, SUB, MUL, DIV, XOR, MOV, INC, DEC,	/* reg(reg_t) */
 	ADDIB, SUBIB, MULIB, DIVIB, XORIB, MOVIB,	/* immb(8) */
 	ADDIW, SUBIW, MULIW, DIVIW, XORIW, MOVIW,	/* immw(16) */
@@ -42,13 +42,13 @@ enum INST_NAME {
 	PUSHIB, PUSHIW, PUSHID,	/* immu(32,16,8) */
 	GSTK, PSTK,
 	EXIT, SYSCALL, INVALID_OPCODE
-};
+} INST_NAME;
 
 typedef struct {
-	enum INST_NAME name;
+	INST_NAME name;
 	char sname[32];
 	u8 opcode;
-	 reg_t(*func) (reg_t a, reg_t b);
+        reg_t(*func) (reg_t a, reg_t b);
 } inst;
 
 // opcodes of instrucions
@@ -141,8 +141,8 @@ bool init_vm(vm_t * vm, size_t cs, size_t ss);
 bool term_vm(vm_t * vm);
 bool process_code(vm_t * vm, bool execute, bool verbose);
 
-enum INST_NAME get_inst_name(u8 opcode);
-inst get_instruction(u8 opcode);
+INST_NAME get_inst_name(const u8 opcode);
+inst get_instruction(const u8 opcode);
 reg_t *ridx_to_rvm(reg_t r_idx, vm_t * vm);
 
 const char *reg_to_str(reg_t r);

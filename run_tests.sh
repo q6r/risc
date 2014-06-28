@@ -26,6 +26,14 @@ run_test() {
   echo -n " '$DESC' "
   FCODE="$(echo "$CODE"|perl -pe 's/([0-9a-f]{2})/chr hex $1/gie')"
   RES="$(emu/emu "$FCODE")"
+
+  # IF stack random is checked in tests
+  # then unrandomize the stacks in res+expect
+  if [[ $RANDOM_STACK == 1 ]]; then
+    RES="$(echo "${RES}" | sed 's/stack\[.*\]/stack\[RANDOM\]/g')"
+    EXPECT="$(echo "${EXPECT}" | sed 's/stack\[.*\]/stack\[RANDOM\]/g')"
+  fi
+
   if [ "$RES" == "$EXPECT" ]; then
     echo -e "\t$C_GREEN PASSED $C_END"
     TOTAL=$((TOTAL+1))

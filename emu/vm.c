@@ -72,9 +72,8 @@ static inst inst_table[100] = {
 
 bool init_vm(vm_t * vm, size_t cs, size_t ss)
 {
-    if (cs < 0 || ss < 0)
+    if(vm == NULL)
         return false;
-
     memset(&vm->regs, 0, sizeof(vm->regs));
     vm->code_size = cs;
     vm->stack_size = ss;

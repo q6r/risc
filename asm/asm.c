@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 	fd_size = ftell(fd);
 	fseek(fd, 0, SEEK_SET);
 
-	printf("Source code : %s (%d bytes)\n", source_name, fd_size);
+	printf("Source code : %s (%ld bytes)\n", source_name, fd_size);
 	printf("Compiled code : %s\n", output_name);
 
 	// count lines in source code
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 			fd_lines++;
 	fseek(fd, 0, SEEK_SET);
 
-	printf("There are %d lines of code\n", fd_lines);
+	printf("There are %ld lines of code\n", fd_lines);
 
 	// read file contents by lines into code_lines
 	char **code_lines = { 0 };
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 			       "cur_binc.reg    = %.2x\n"
 			       "cur_binc.val    = %.8x\n"
 			       "===========================\n",
-			       cur_binc.opcode, cur_binc.reg, cur_binc.val);
+			       cur_binc.opcode, cur_binc.reg, cur_binc.val.v32);
 		}
 	}
 	// XXX write binary instructions

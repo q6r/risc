@@ -5,14 +5,19 @@
 #include <assert.h>
 #include "vm.h"
 
-#define EXTRACT_8_ARR(X, Y, Z) X = (X << 8) | Y[++Z]
-#define EXTRACT_16_ARR(X, Y, Z) do { \
-			EXTRACT_8_ARR(X, Y, Z); \
-			EXTRACT_8_ARR(X, Y, Z); \
+#define EXTRACT_8_ARR(D, ARR, ARR_IDD) D = ARR[++ARR_IDD]
+#define EXTRACT_8_ARR_CON(D, ARR, ARR_IDD) D = (D << 8) | ARR[++ARR_IDD]
+#define EXTRACT_16_ARR(D, ARR, ARR_IDD) do { \
+			EXTRACT_8_ARR(D, ARR, ARR_IDD); \
+			EXTRACT_8_ARR_CON(D, ARR, ARR_IDD); \
 			} while(0)
-#define EXTRACT_32_ARR(X, Y, Z) do { \
-			EXTRACT_16_ARR(X, Y, Z); \
-			EXTRACT_16_ARR(X, Y, Z); \
+#define EXTRACT_16_ARR_CON(D, ARR, ARR_IDD) do { \
+			EXTRACT_8_ARR_CON(D, ARR, ARR_IDD); \
+			EXTRACT_8_ARR_CON(D, ARR, ARR_IDD); \
+			} while(0)
+#define EXTRACT_32_ARR(D, ARR, ARR_IDD) do { \
+			EXTRACT_16_ARR(D, ARR, ARR_IDD); \
+			EXTRACT_16_ARR_CON(D, ARR, ARR_IDD); \
 			} while(0)
 
 bool is_valid_reg(u8 r_idx);

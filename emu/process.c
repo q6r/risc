@@ -5,44 +5,38 @@
  */
 
 
-bool is_valid_reg(u8 r_idx) {
+bool is_valid_reg(const u8 r_idx) {
 
     if(r_idx == RR1 || r_idx == RR2 || r_idx == RR3 ||
-       r_idx == RR4 || r_idx == RR5 || r_idx == RR6 ||
-       r_idx == RR7 || r_idx == RR8 || r_idx == RPS ||
-       r_idx == RPC) {
+      r_idx == RR4 || r_idx == RR5 || r_idx == RR6 ||
+        r_idx == RR7 || r_idx == RR8 || r_idx == RPS ||
+        r_idx == RPC) {
             return true;
         }
 
     return false;
 }
 
-bool process_add(inst c_inst, vm_t *vm, bool verbose) {
+bool process_reg_reg(const inst c_inst, vm_t *vm, const bool verbose) {
+    // extract registers
     u8 ra_idx = vm->code[++vm->regs.pc];
     u8 rb_idx = vm->code[++vm->regs.pc];
     reg_t *ra, *rb;
-
-    if (verbose) {
+    if (verbose)
         printf("%s >>>>> %s %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
           reg_to_str(ra_idx),
         reg_to_str(rb_idx));
-    }
-
     if(!is_valid_reg(ra_idx) || !is_valid_reg(rb_idx))
         return false;
     ra = ridx_to_rvm(ra_idx, vm);
     rb = ridx_to_rvm(rb_idx, vm);
-
     if(ra == NULL || rb == NULL)
         return false;
-    // do instruction
     *ra = c_inst.func(*ra, *rb);
-
     return true;
 }
 
-
-bool process_addib(inst c_inst, vm_t *vm, bool verbose) {
+bool process_reg_immb(const inst c_inst, vm_t *vm, const bool verbose) {
     u8 ra_idx = vm->code[++vm->regs.pc];
     u8 rab;
     reg_t *ra;
@@ -62,8 +56,7 @@ bool process_addib(inst c_inst, vm_t *vm, bool verbose) {
     return true;
 }
 
-
-bool process_addiw(inst c_inst, vm_t *vm, bool verbose) {
+bool process_reg_immw(const inst c_inst, vm_t *vm, const bool verbose) {
     u8 ra_idx = vm->code[++vm->regs.pc];
     u16 rab;
     reg_t *ra;
@@ -80,9 +73,9 @@ bool process_addiw(inst c_inst, vm_t *vm, bool verbose) {
         return false;
     *ra = c_inst.func(*ra, (u16) rab);
     return true;
-}
 
-bool process_addid(inst c_inst, vm_t *vm, bool verbose) {
+}
+bool process_reg_immd(const inst c_inst, vm_t *vm, const bool verbose) {
     u8 ra_idx = vm->code[++vm->regs.pc];
     u32 rab;
     reg_t *ra;
@@ -102,418 +95,7 @@ bool process_addid(inst c_inst, vm_t *vm, bool verbose) {
     return true;
 }
 
-
-bool process_sub(inst c_inst, vm_t *vm, bool verbose) {
-    // extract registers
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u8 rb_idx = vm->code[++vm->regs.pc];
-    reg_t *ra, *rb;
-
-    if (verbose) {
-        printf("%s >>>>> %s %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
-          reg_to_str(ra_idx),
-        reg_to_str(rb_idx));
-    }
-    if(!is_valid_reg(ra_idx) || !is_valid_reg(rb_idx))
-        return false;
-    ra = ridx_to_rvm(ra_idx, vm);
-    rb = ridx_to_rvm(rb_idx, vm);
-    if(ra == NULL || rb == NULL)
-        return false;
-    *ra = c_inst.func(*ra, *rb);
-    return true;
-}
-
-bool process_subib(inst c_inst, vm_t *vm, bool verbose) {
-    // extract register and byte
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u8 rab;
-    reg_t *ra;
-    EXTRACT_8_ARR(rab, vm->code, vm->regs.pc);
-    if (verbose)
-        printf("%s >>>>> %s %s %.8x\n",
-          __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
-        rab);
-    if(!is_valid_reg(ra_idx))
-        return false;
-    // does job
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, (u8) rab);
-    return true;
-}
-bool process_subiw(inst c_inst, vm_t *vm, bool verbose) {
-    // extract register and byte
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u16 rab;
-    reg_t *ra;
-
-    EXTRACT_16_ARR(rab, vm->code, vm->regs.pc);
-    if (verbose)
-        printf("%s >>>>> %s %s %.8x\n",
-          __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
-        rab);
-    if(!is_valid_reg(ra_idx))
-        return false;
-    // does job
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, (u16) rab);
-    return true;
-
-}
-
-bool process_subid(inst c_inst, vm_t *vm, bool verbose) {
-
-    // extract register and byte
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u32 rab;
-    reg_t *ra;
-    EXTRACT_32_ARR(rab, vm->code, vm->regs.pc);
-    if (verbose)
-        printf("%s >>>>> %s %s %.8x\n",
-          __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
-        rab);
-    if(!is_valid_reg(ra_idx))
-        return false;
-    // does job     
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, (u32) rab);
-    return true;
-
-}
-
-
-bool process_mul(inst c_inst, vm_t *vm, bool verbose) { 
-
-    // extract registers
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u8 rb_idx = vm->code[++vm->regs.pc];
-    reg_t *ra,*rb;
-    if (verbose)
-        printf("%s >>>>> %s %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
-          reg_to_str(ra_idx),
-        reg_to_str(rb_idx));
-    if(!is_valid_reg(ra_idx) || !is_valid_reg(rb_idx))
-        return false;
-    ra = ridx_to_rvm(ra_idx, vm);
-    rb = ridx_to_rvm(rb_idx, vm);
-    if(ra == NULL || rb == NULL)
-        return false;
-    *ra = c_inst.func(*ra, *rb);
-    return true;
-}
-bool process_mulib(inst c_inst, vm_t *vm, bool verbose) { 
-    // extract register and byte
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u8 rab;
-    reg_t *ra;
-    EXTRACT_8_ARR(rab, vm->code, vm->regs.pc);
-    if (verbose)
-        printf("%s >>>>> %s %s %.8x\n",
-          __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
-        rab);
-    if(!is_valid_reg(ra_idx))
-        return false;
-    // does job     
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, (u8) rab);
-    return true;
-
-}
-bool process_muliw(inst c_inst, vm_t *vm, bool verbose) { 
-    // extract register and byte
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u16 rab;
-    reg_t *ra;
-    EXTRACT_16_ARR(rab, vm->code, vm->regs.pc);
-    if (verbose)
-        printf("%s >>>>> %s %s %.8x\n",
-          __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
-        rab);
-    if(!is_valid_reg(ra_idx))
-        return false;
-    // does job
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, (u16) rab);
-    return true;
-
-}
-bool process_mulid(inst c_inst, vm_t *vm, bool verbose) { 
-    // extract register and byte
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u32 rab;
-    reg_t *ra;
-    EXTRACT_32_ARR(rab, vm->code, vm->regs.pc);
-    if (verbose)
-        printf("%s >>>>> %s %s %.8x\n",
-          __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
-        rab);
-    if(!is_valid_reg(ra_idx))
-        return false;
-    // does job
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, (u32) rab);
-    return true;
-
-}
-
-
-
-bool process_div(inst c_inst, vm_t *vm, bool verbose) { 
-
-    // extract registers
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u8 rb_idx = vm->code[++vm->regs.pc];
-    reg_t *ra, *rb;
-
-    if (verbose)
-        printf("%s >>>>> %s %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
-          reg_to_str(ra_idx),
-        reg_to_str(rb_idx));
-    if(!is_valid_reg(ra_idx) || !is_valid_reg(rb_idx))
-        return false;
-    ra = ridx_to_rvm(ra_idx, vm);
-    rb = ridx_to_rvm(rb_idx, vm);
-    if(ra == NULL || rb == NULL)
-        return false;
-    *ra = c_inst.func(*ra, *rb);
-    return true;
-}
-
-bool process_divib(inst c_inst, vm_t *vm, bool verbose) { 
-    // extract register and byte
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u8 rab;
-    reg_t *ra;
-    EXTRACT_8_ARR(rab, vm->code, vm->regs.pc);
-    if (verbose)
-        printf("%s >>>>> %s %s %.8x\n",
-          __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
-        rab);
-    if(!is_valid_reg(ra_idx))
-        return false;
-    // does job
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, (u8) rab);
-    return true;
-}
-
-bool process_diviw(inst c_inst, vm_t *vm, bool verbose) { 
-    // extract register and byte
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u16 rab;
-    reg_t *ra;
-    EXTRACT_16_ARR(rab, vm->code, vm->regs.pc);
-    if (verbose)
-        printf("%s >>>>> %s %s %.8x\n",
-          __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
-        rab);
-    if(!is_valid_reg(ra_idx))
-        return false;
-    // does job
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, (u16) rab);
-    return true;
-}
-
-bool process_divid(inst c_inst, vm_t *vm, bool verbose) { 
-    // extract register and byte
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u32 rab;
-    reg_t *ra;
-    EXTRACT_32_ARR(rab, vm->code, vm->regs.pc);
-    if (verbose)
-        printf("%s >>>>> %s %s %.8x\n",
-          __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
-        rab);
-    if(!is_valid_reg(ra_idx))
-        return false;
-    // does job
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, (u32) rab);
-    return true;
-}
-
-
-bool process_xor(inst c_inst, vm_t *vm, bool verbose) { 
-
-    // extract registers
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u8 rb_idx = vm->code[++vm->regs.pc];
-    reg_t *ra, *rb;
-    if (verbose)
-        printf("%s >>>>> %s %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
-          reg_to_str(ra_idx),
-        reg_to_str(rb_idx));
-    if(!is_valid_reg(ra_idx) || !is_valid_reg(rb_idx))
-        return false;
-    ra = ridx_to_rvm(ra_idx, vm);
-    rb = ridx_to_rvm(rb_idx, vm);
-    if(ra == NULL || rb == NULL)
-        return false;
-    *ra = c_inst.func(*ra, *rb);
-    return true;
-}
-bool process_xorib(inst c_inst, vm_t *vm, bool verbose) { 
-    // extract register and byte
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u8 rab;
-    reg_t *ra;
-    EXTRACT_8_ARR(rab, vm->code, vm->regs.pc);
-    if (verbose)
-        printf("%s >>>>> %s %s %.8x\n",
-          __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
-        rab);
-    if(!is_valid_reg(ra_idx))
-        return false;
-    // does job     
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, (u8) rab);
-    return true;
-}
-bool process_xoriw(inst c_inst, vm_t *vm, bool verbose) { 
-    // extract register and byte
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u16 rab;
-    reg_t *ra;
-    EXTRACT_16_ARR(rab, vm->code, vm->regs.pc);
-    if (verbose)
-        printf("%s >>>>> %s %s %.8x\n",
-          __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
-        rab);
-    if(!is_valid_reg(ra_idx))
-        return false;
-    // does job
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, (u16) rab);
-    return true;
-}
-bool process_xorid(inst c_inst, vm_t *vm, bool verbose) { 
-    // extract register and byte
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u32 rab;
-    reg_t *ra;
-    EXTRACT_32_ARR(rab, vm->code, vm->regs.pc);
-    if (verbose)
-        printf("%s >>>>> %s %s %.8x\n",
-          __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
-        rab);
-    if(!is_valid_reg(ra_idx))
-        return false;
-    // does job
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, (u32) rab);
-    return true;
-}
-
-
-
-bool process_mov(inst c_inst, vm_t *vm, bool verbose) {
-    // extract registers
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u8 rb_idx = vm->code[++vm->regs.pc];
-    reg_t *ra, *rb;
-    if (verbose)
-        printf("%s >>>>> %s %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
-          reg_to_str(ra_idx),
-        reg_to_str(rb_idx));
-    if(!is_valid_reg(ra_idx) || !is_valid_reg(rb_idx))
-        return false;
-    ra = ridx_to_rvm(ra_idx, vm);
-    rb = ridx_to_rvm(rb_idx, vm);
-    if(ra == NULL || rb == NULL)
-        return false;
-    *ra = c_inst.func(*ra, *rb);
-    return true;
-
-}
-
-bool process_movib(inst c_inst, vm_t *vm, bool verbose) {
-    // extract register and byte
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u8 rab;
-    reg_t *ra;
-    EXTRACT_8_ARR(rab, vm->code, vm->regs.pc);
-    if (verbose)
-        printf("%s >>>>> %s %s %.8x\n",
-          __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
-        rab);
-    if(!is_valid_reg(ra_idx))
-        return false;
-    // does job
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, (u8) rab);
-    return true;
-
-}
-
-bool process_moviw(inst c_inst, vm_t *vm, bool verbose) {
-    // extract register and byte
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u16 rab;
-    reg_t *ra;
-    EXTRACT_16_ARR(rab, vm->code, vm->regs.pc);
-    if (verbose)
-        printf("%s >>>>> %s %s %.8x\n",
-          __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
-        rab);
-    if(!is_valid_reg(ra_idx))
-        return false;
-    // does job
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, (u16) rab);
-    return true;
-}
-
-bool process_movid(inst c_inst, vm_t *vm, bool verbose) {
-    // extract register and byte
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    u32 rab;
-    reg_t *ra;
-    EXTRACT_32_ARR(rab, vm->code, vm->regs.pc);
-    if (verbose)
-        printf("%s >>>>> %s %s %.8x\n",
-          __PRETTY_FUNCTION__, c_inst.sname, reg_to_str(ra_idx),
-        rab);
-    if(!is_valid_reg(ra_idx))
-        return false;
-    // does job
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, (u32) rab);
-    return true;
-}
-
-
-bool process_inc(inst c_inst, vm_t *vm, bool verbose) { 
+bool process_reg(const inst c_inst, vm_t *vm, const bool verbose) { 
     // extract registers
     u8 ra_idx = vm->code[++vm->regs.pc];
     reg_t *ra;
@@ -528,23 +110,6 @@ bool process_inc(inst c_inst, vm_t *vm, bool verbose) {
     *ra = c_inst.func(*ra, 0);
     return true;
 }
-
-bool process_dec(inst c_inst, vm_t *vm, bool verbose) { 
-    // extract registers
-    u8 ra_idx = vm->code[++vm->regs.pc];
-    reg_t *ra;
-    if (verbose)
-        printf("%s >>>>> %s %s\n", __PRETTY_FUNCTION__, c_inst.sname,
-          reg_to_str(ra_idx));
-    if(!is_valid_reg(ra_idx))
-        return false;
-    ra = ridx_to_rvm(ra_idx, vm);
-    if(ra == NULL)
-        return false;
-    *ra = c_inst.func(*ra, 0);
-    return true;
-}
-
 
 bool process_pushb(inst c_inst, vm_t *vm, bool verbose) { 
     // extract registers
@@ -561,6 +126,7 @@ bool process_pushb(inst c_inst, vm_t *vm, bool verbose) {
     vm->stack[vm->regs.ps++] = (u8) * ra;
     return true;
 }
+
 bool process_pushw(inst c_inst, vm_t *vm, bool verbose) { 
     u8 ra_idx = vm->code[++vm->regs.pc];
     reg_t *ra;
@@ -615,7 +181,7 @@ bool process_popb(inst c_inst, vm_t *vm, bool verbose) {
 bool process_popw(inst c_inst, vm_t *vm, bool verbose) { 
     if(vm->regs.ps <= 0)
         return false;
-    
+
     u8 ra_idx = vm->code[++vm->regs.pc];
     reg_t *ra;
 

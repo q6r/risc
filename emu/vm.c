@@ -202,134 +202,55 @@ bool process_code(vm_t * vm, bool verbose)
         inst c_inst = get_instruction(opcode);
         bool pstat = false;
         switch (c_inst.name) {
+            // op reg, reg
         case ADD:
-           {
-              pstat = process_add(c_inst, vm, true);
-              break;
-           }
-        case ADDIB:
-           {
-              pstat = process_addib(c_inst, vm, true);
-              break;
-           }
-        case ADDIW:
-           {
-              pstat = process_addiw(c_inst, vm, true);
-              break;
-           }
-        case ADDID:
-           {
-              pstat = process_addid(c_inst, vm, true);
-              break;
-           }
         case SUB:
-           {
-              pstat = process_sub(c_inst, vm, true);	
-              break;
-           }
-        case SUBIB:
-           {
-              pstat = process_subib(c_inst, vm, true);
-              break;
-           }
-        case SUBIW:
-           {
-              pstat = process_subiw(c_inst, vm, true);
-              break;
-           }
-        case SUBID:
-           {
-              pstat = process_subid(c_inst, vm, true);
-              break;
-           }
         case MUL:
-           {
-              pstat = process_mul(c_inst, vm, true);
-              break;
-           }
-        case MULIB:
-           {
-              pstat = process_mulib(c_inst, vm, true);
-              break;
-           }
-        case MULIW:
-           {
-              pstat = process_muliw(c_inst, vm, true);
-              break;
-           }
-        case MULID:
-           {
-              pstat = process_mulid(c_inst, vm, true);
-              break;
-           }
         case DIV:
-           {
-              pstat = process_div(c_inst, vm, true);
-              break;
-           }
-        case DIVIB:
-           {
-              pstat = process_divib(c_inst, vm, true);
-              break;
-           }
-        case DIVIW:
-           {
-              pstat = process_diviw(c_inst, vm, true);
-              break;
-           }
-        case DIVID:
-           {
-              pstat = process_divid(c_inst, vm, true);
-              break;
-           }
         case XOR:
-           {
-              pstat = process_xor(c_inst, vm, true);
-              break;
-           }
-        case XORIB:
-           {
-              pstat = process_xorib(c_inst, vm, true);
-              break;
-           }
-        case XORIW:
-           {
-              pstat = process_xoriw(c_inst, vm, true);
-              break;
-           }
-        case XORID:
-           {
-              pstat = process_xorid(c_inst, vm, true);
-              break;
-           }
         case MOV:
            {
-              pstat = process_mov(c_inst, vm, true);
+              pstat = process_reg_reg(c_inst, vm, true);
               break;
            }
+          // op reg, immb
+        case ADDIB:
+        case SUBIB:
+        case MULIB:
+        case DIVIB:
+        case XORIB:
         case MOVIB:
            {
-              pstat = process_movib(c_inst, vm, true);
+              pstat = process_reg_immb(c_inst, vm, true);
               break;
            }
+          // op reg, immw
+        case ADDIW:
+        case SUBIW:
+        case MULIW:
+        case DIVIW:
+        case XORIW:
         case MOVIW:
            {
-              pstat = process_moviw(c_inst, vm, true);
+              pstat = process_reg_immw(c_inst, vm, true);
               break;
            }
+          // op reg, immd
+        case ADDID:
+        case SUBID:
+        case MULID:
+        case DIVID:
+        case XORID:
         case MOVID:
            {
-              pstat = process_movid(c_inst, vm, true);
+              pstat = process_reg_immd(c_inst, vm, true);
               break;
            }
+          // op reg
         case INC:
-           {
-              pstat = process_inc(c_inst, vm, true);
-              break;
-           }
         case DEC:
            {
-              pstat = process_dec(c_inst, vm, true);
+              pstat = process_reg(c_inst, vm, true);
               break;
            }
         case PUSHB:
@@ -384,7 +305,7 @@ bool process_code(vm_t * vm, bool verbose)
            }
         case PSTK:
            {
-              pstat = process_gstk(c_inst, vm, true);
+              pstat = process_pstk(c_inst, vm, true);
               break;
            }
         case EXIT:

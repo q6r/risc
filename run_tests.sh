@@ -33,6 +33,9 @@ run_test() {
     RES="$(echo "${RES}" | sed 's/stack\[.*\]/stack\[RANDOM\]/g')"
     EXPECT="$(echo "${EXPECT}" | sed 's/stack\[.*\]/stack\[RANDOM\]/g')"
   fi
+  # Remove verbose string "Function >>>> %s %.nx...etc"
+  RES="$(echo "${RES}" | sed 's/.*>>>>.*//g')"
+  EXPECT="$(echo "${EXPECT}" | sed 's/.*>>>>.*//g')"
 
   if [ "$RES" == "$EXPECT" ]; then
     echo -e "\t$C_GREEN PASSED $C_END"

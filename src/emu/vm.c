@@ -1,12 +1,6 @@
 /* - qnix
  * TODO: Continue implementing syscall
- * TODO: Add more tests for new registers
- * TODO: Implement a sys_call interface
- * TODO: fix values in reg_t vs u32 vs u16 vs u8
- * TODO: registers numbers should be considered as u8 not reg_t
- * XXX: implement TESTS *Check*
- * XXX: maybe convert reg_t to a struct that contains a value, and a string name
- * and maybe other things.. settings ? -reg_to_str(..)
+ * TODO: Add missing tests for opcodes
  * =====================================================================
  * Implementation of a simple virtual machine 32bit
  * =====================================================================

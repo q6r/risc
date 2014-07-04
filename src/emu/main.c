@@ -9,23 +9,34 @@
 #include "vm.h"
 #include "compiler.h"
 
+#define MACHINE_SZ 1024*8
+
 int main(int argc, char **argv)
 {
     vm_t vm;
+    u8 *stdin_buf;
+    size_t read_size;
 
-    if(argc < 2) {
-        printf("Usage : %s \"<opcodes>\"\n", argv[0]);
+    stdin_buf = calloc(MACHINE_SZ, sizeof(u8));    
+    if(stdin_buf == NULL) {
+      perror("calloc");
+      return -1;
+    }
+
+    read_size = fread(stdin_buf, sizeof(u8), MACHINE_SZ, stdin);
+    if(read_size <= 0) {
+        fprintf(stderr, "[-] fread: failed\n");
         return -1;
     }
 
-    if (!init_vm(&vm, strlen(argv[1]), strlen(argv[1]))) {
-        printf("Unable to initalize vm\n");
+    if (!init_vm(&vm, read_size, read_size)) {
+        fprintf(stderr,"[-] init_vm: failed\n");
         return -1;
     }
 
-    memcpy(vm.code, argv[1], strlen(argv[1]));
+    memcpy(vm.code, stdin_buf, read_size);
     if (!process_code(&vm, true)) {
-        printf("Failed processing code\n");
+        fprintf(stderr, "[-] process_code: failed\n");
         term_vm(&vm);
         return -1;
     } else {

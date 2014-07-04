@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include "vm.h"
+#include "compiler.h"
 
 int main(int argc, char **argv)
 {

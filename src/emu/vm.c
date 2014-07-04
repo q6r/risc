@@ -449,7 +449,7 @@ bool show_regs(vm_t *vm) {
     if(vm->regs.ps == 0)
         printf("|> No stack\n");
     else {
-        for(i=0;i<vm->regs.ps;i++) {
+        for(i=vm->regs.ps-1;i!=-1;i--) {
             printf(
               "|> stack[%d@%p] = %.8x\n", i,
             &vm->stack[i], vm->stack[i]);

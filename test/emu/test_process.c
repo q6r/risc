@@ -437,28 +437,16 @@ void test_op_divib(void) {
 void test_op_xorib(void) {
     CODE (
       OP_MOVIB, RR1, 0x18,
-         OP_MOVIB, RR2, 0x18,
-         OP_MOVIB, RR3, 0x28,
-         OP_MOVIB, RR4, 0x28,
-         OP_XORIB, RR1, RR2, // rr1 = 0x18 ^ 0x18;
-         OP_XORIB, RR3, RR4, // rr3 = 0x28 ^ 0x28;
-         OP_XORIB, RR2, RR4, // rr2 = 0x18 ^ 0x28;
-         OP_XORIB, RR4, RR4, // rr4 = 0x00;
+         OP_MOVIB, RR2, 0x28,
+         OP_XORIB, RR1, 0xaa,
+         OP_XORIB, RR2, 0xbb,
          );
-    P_R_REPEAT(4, process_reg_immb);
-    // r1=0x18
-    // r2=0x18
-    // r3=0x28
-    // r4=0x28
+    P_R_REPEAT(2, process_reg_immb);
     TEST_ASSERT_EQUAL_HEX(vm.regs.r1, 0x18);
-    TEST_ASSERT_EQUAL_HEX(vm.regs.r2, 0x18);
-    TEST_ASSERT_EQUAL_HEX(vm.regs.r3, 0x28);
-    TEST_ASSERT_EQUAL_HEX(vm.regs.r4, 0x28);
-    P_R_REPEAT(4, process_reg_immb);
-    TEST_ASSERT_EQUAL_HEX(vm.regs.r1, 0x18^0x18);
-    TEST_ASSERT_EQUAL_HEX(vm.regs.r2, 0x18^0x28);
-    TEST_ASSERT_EQUAL_HEX(vm.regs.r3, 0x28^0x28);
-    TEST_ASSERT_EQUAL_HEX(vm.regs.r4, 0x28^0x28);
+    TEST_ASSERT_EQUAL_HEX(vm.regs.r2, 0x28);
+    P_R_REPEAT(2, process_reg_immb);
+    TEST_ASSERT_EQUAL_HEX(vm.regs.r1, 0x18^0xaa);
+    TEST_ASSERT_EQUAL_HEX(vm.regs.r2, 0x28^0xbb);
 }
 
 void test_op_pushib(void) {
